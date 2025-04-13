@@ -23,13 +23,16 @@ int yyerror(const char *p) { printf("yyerror() - Error! '%s' | Line: %d \n", p, 
 
 %union {
     uint32_t int_val;
-    //char string_val[100];
+    char string_val[100];
     char sym;
     //node_t* expr_ptr;
 };
 
 %token <int_val> COORDINATE_DIGITS;
+%token <int_val> INTEGER_NUMBER DECIMAL_NUMBER;
+%token <string_val> APERTURE_IDENT APERTURE_IDENT_MOVE APERTURE_IDENT_SEGMENT APERTURE_IDENT_FLASH;
 
+%token <sym> AD_TOK
 %token <sym> NEW_LINE
 %token <sym> DOT COLON COMMA OPENING_BRACKET CLOSING_BRACKET
 
@@ -41,25 +44,24 @@ start_symbol
 
 statements
     : statement
-    | statements statement
+    | statements NEW_LINE statement
     ;
 
 statement
-    : single_statement
+    : single_statement { std::cout << "single_statement" << std::endl; }
 //    | compound_statement
     ;
 
 single_statement
     :
-//    operation
+    operation { std::cout << "operation" << std::endl; }
 //    | interpolation_state_command
-//    | Dnn
+    | Dnn
 //    | G04
 //    | attribute_command
-//    | AD
+    | AD
 //    | AM
-    //|
-    coordinate_command
+    | coordinate_command
 //    | transformation_state_command
     ;
 
@@ -71,15 +73,17 @@ single_statement
 
 coordinate_command
     : FS
-//    | MO
+    | MO
     ;
 
-/* operation
-    : D01
-    | D02
-    | D03
+operation
+    :
+    //D01
+    //|
+    D02  { std::cout << "operation.D02" << std::endl; }
+    | D03 { std::cout << "operation.D03" << std::endl; }
     ;
-
+/*
 interpolation_state_command
     : G01
     | G02
@@ -105,21 +109,39 @@ attribute_command
 //# Graphics commands
 //#------------------
 
-FS : '%' 'F''S' 'L''A' 'X' COORDINATE_DIGITS 'Y' COORDINATE_DIGITS '*''%' { std::cout << "FS " << $7 << " " << $9 << std::endl; };
-/* #coordinate_digits = /[1-6][56]/;
-MO = '%' ('MO' ('MM'|'IN')) '*%';
+FS
+    : '%' 'F''S' 'L''A' 'X' COORDINATE_DIGITS 'Y' COORDINATE_DIGITS '*''%' { std::cout << "FS " << $7 << " " << $9 << std::endl; }
+    ;
+MO
+    : '%' 'M''O''M''M' '*''%' { std::cout << "MOMM" << std::endl; };
+    | '%' 'M''O''I''N' '*''%' { std::cout << "MOIN" << std::endl; };
+    ;
 
+/*
 D01 = (['X' integer] ['Y' integer] ['I' integer 'J' integer] 'D01') '*';
-D02 = (['X' integer] ['Y' integer] 'D02') '*';
-D03 = (['X' integer] ['Y' integer] 'D03') '*';
+*/
 
+X_Y_PREFIX
+    //: 'X' INTEGER_NUMBER 'Y' INTEGER_NUMBER
+    : 'X' { std::cout << "X=" << std::endl; } INTEGER_NUMBER 'Y' { std::cout << "Y=" << std::endl; } INTEGER_NUMBER
+    ;
+
+D02
+    : X_Y_PREFIX APERTURE_IDENT_MOVE '*'
+    ;
+
+D03
+    : X_Y_PREFIX APERTURE_IDENT_FLASH { std::cout << "D03" << std::endl; } '*' { std::cout << "*" << std::endl; }
+    ;
+
+/*
 G01 = ('G01') '*';
 G02 = ('G02') '*';
 G03 = ('G03') '*';
 G75 = ('G75') '*';
-
-Dnn = (aperture_ident) '*';
-
+*/
+Dnn : APERTURE_IDENT '*' { std::cout << "Dnn" << std::endl; };
+/*
 G04 = ('G04' string) '*';
 
 M02 = ('M02') '*';
@@ -128,20 +150,32 @@ LP = '%' ('LP' ('C'|'D')) '*%';
 LM = '%' ('LM' ('N'|'XY'|'Y'|'X')) '*%';
 LR = '%' ('LR' decimal) '*%';
 LS = '%' ('LS' decimal) '*%';
+*/
 
-AD = '%' ('AD' aperture_ident template_call) '*%';
+AD
+    : '%' AD_TOK APERTURE_IDENT template_call '*''%' { std::cout << "AD" << std::endl; };
+    ;
 
 //#aperture_shape = name [',' decimal {'X' decimal}*];
 
-template_call =
-   | 'C' fst_par [nxt_par]
-   | 'R' fst_par nxt_par [nxt_par]
-   | 'O' fst_par nxt_par [nxt_par]
-   | 'P' fst_par nxt_par [nxt_par [nxt_par]]
-   | !(('C'|'R'|'O'|'P')(','|'*')) name [fst_par {nxt_par}*]
+template_call
+   : 'C' fst_par
+   //| 'C' fst_par nxt_par
+   //| 'R' fst_par nxt_par [nxt_par]
+   //| 'O' fst_par nxt_par [nxt_par]
+   //| 'P' fst_par nxt_par [nxt_par [nxt_par]]
+   //| !(('C'|'R'|'O'|'P')(','|'*')) name [fst_par {nxt_par}*]
    ;
-fst_par = ',' (decimal);
-nxt_par = 'X' (decimal);
+
+fst_par
+    : COMMA DECIMAL_NUMBER
+    ;
+
+nxt_par
+    : 'X' DECIMAL_NUMBER
+    ;
+
+/*
 
 AM = '%' ('AM' macro_name macro_body) '%';
 

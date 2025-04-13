@@ -55,12 +55,19 @@ extern int yydebug;
     YYerror = 256,                 /* error  */
     YYUNDEF = 257,                 /* "invalid token"  */
     COORDINATE_DIGITS = 258,       /* COORDINATE_DIGITS  */
-    NEW_LINE = 259,                /* NEW_LINE  */
-    DOT = 260,                     /* DOT  */
-    COLON = 261,                   /* COLON  */
-    COMMA = 262,                   /* COMMA  */
-    OPENING_BRACKET = 263,         /* OPENING_BRACKET  */
-    CLOSING_BRACKET = 264          /* CLOSING_BRACKET  */
+    INTEGER_NUMBER = 259,          /* INTEGER_NUMBER  */
+    DECIMAL_NUMBER = 260,          /* DECIMAL_NUMBER  */
+    APERTURE_IDENT = 261,          /* APERTURE_IDENT  */
+    APERTURE_IDENT_MOVE = 262,     /* APERTURE_IDENT_MOVE  */
+    APERTURE_IDENT_SEGMENT = 263,  /* APERTURE_IDENT_SEGMENT  */
+    APERTURE_IDENT_FLASH = 264,    /* APERTURE_IDENT_FLASH  */
+    AD_TOK = 265,                  /* AD_TOK  */
+    NEW_LINE = 266,                /* NEW_LINE  */
+    DOT = 267,                     /* DOT  */
+    COLON = 268,                   /* COLON  */
+    COMMA = 269,                   /* COMMA  */
+    OPENING_BRACKET = 270,         /* OPENING_BRACKET  */
+    CLOSING_BRACKET = 271          /* CLOSING_BRACKET  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -72,11 +79,11 @@ union YYSTYPE
 #line 24 "grammar/parser.y"
 
     uint32_t int_val;
-    //char string_val[100];
+    char string_val[100];
     char sym;
     //node_t* expr_ptr;
 
-#line 80 "parser.h"
+#line 87 "parser.h"
 
 };
 typedef union YYSTYPE YYSTYPE;
