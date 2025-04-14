@@ -31,3 +31,6 @@
 *.out
 *.app
 parser.output
+lex.yy.c
+parser.c
+parser.h
