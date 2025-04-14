@@ -35,6 +35,7 @@ int yyerror(const char *p) { printf("yyerror() - Error! '%s' | Line: %d \n", p, 
 %token <sym> AD_TOK
 %token <sym> NEW_LINE
 %token <sym> DOT COLON COMMA OPENING_BRACKET CLOSING_BRACKET
+%token <sym> INTERPOLATION_LINEAR INTERPOLATION_CW_CIRCULAR INTERPOLATION_CCW_CIRCULAR INTERPOLATION_BEFORE_FIRST_CIRCULAR_COMPAT
 
 %%
 
@@ -55,7 +56,7 @@ statement
 single_statement
     :
     operation { std::cout << "operation" << std::endl; }
-//    | interpolation_state_command
+    | interpolation_state_command { std::cout << "interpolation_state_command" << std::endl; }
     | Dnn
 //    | G04
 //    | attribute_command
@@ -83,14 +84,14 @@ operation
     D02  { std::cout << "operation.D02" << std::endl; }
     | D03 { std::cout << "operation.D03" << std::endl; }
     ;
-/*
+
 interpolation_state_command
     : G01
     | G02
     | G03
     | G75
     ;
-
+/*
 transformation_state_command
     : LP
     | LM
@@ -134,12 +135,22 @@ D03
     : X_Y_PREFIX APERTURE_IDENT_FLASH { std::cout << "D03" << std::endl; } '*' { std::cout << "*" << std::endl; }
     ;
 
-/*
-G01 = ('G01') '*';
-G02 = ('G02') '*';
-G03 = ('G03') '*';
-G75 = ('G75') '*';
-*/
+G01
+    : INTERPOLATION_LINEAR '*' { std::cout << "INTERPOLATION_LINEAR" << std::endl; }
+    ;
+
+G02
+    : INTERPOLATION_CW_CIRCULAR '*' { std::cout << "INTERPOLATION_CW_CIRCULAR" << std::endl; }
+    ;
+
+G03
+    : INTERPOLATION_CCW_CIRCULAR '*' { std::cout << "INTERPOLATION_CCW_CIRCULAR" << std::endl; }
+    ;
+
+G75
+    : INTERPOLATION_BEFORE_FIRST_CIRCULAR_COMPAT '*' { std::cout << "INTERPOLATION_BEFORE_FIRST_CIRCULAR_COMPAT" << std::endl; }
+    ;
+
 Dnn : APERTURE_IDENT '*' { std::cout << "Dnn" << std::endl; };
 /*
 G04 = ('G04' string) '*';

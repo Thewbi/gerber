@@ -27,6 +27,11 @@
 
 [+|-]?((([0-9]+)(\.[0-9]*)?)|(\.[0-9]+)) { /*printf("DECIMAL_NUMBER\n");*/ yylval.int_val = atoi(yytext); return DECIMAL_NUMBER; }
 
+"G01" { return INTERPOLATION_LINEAR; }
+"G02" { return INTERPOLATION_CW_CIRCULAR; }
+"G03" { return INTERPOLATION_CCW_CIRCULAR; }
+"G75" { return INTERPOLATION_BEFORE_FIRST_CIRCULAR_COMPAT; }
+
 "D01" { /*printf("APERTURE_IDENT\n"); yylval.int_val = atoi(yytext);*/ return APERTURE_IDENT_SEGMENT; }
 "D02" { /*printf("APERTURE_IDENT\n"); yylval.int_val = atoi(yytext);*/ return APERTURE_IDENT_MOVE; }
 "D03" { /*printf("APERTURE_IDENT\n"); yylval.int_val = atoi(yytext);*/ return APERTURE_IDENT_FLASH; }
