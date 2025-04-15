@@ -44,16 +44,15 @@ start_symbol
     : statements
     ;
 
+/*
+comment
+    : HASHTAG_COMMENT
+    ;
+*/
+
 statements
     : statement
-    | hash_tag_comments
-    | statements NEW_LINE statement
-    | statements NEW_LINE hash_tag_comments
-    ;
-
-hash_tag_comments
-    : HASHTAG_COMMENT
-    | hash_tag_comments HASHTAG_COMMENT
+    | statements statement
     ;
 
 statement
@@ -65,7 +64,7 @@ single_statement
     :
     operation { std::cout << "operation" << std::endl; }
     | interpolation_state_command { std::cout << "interpolation_state_command" << std::endl; }
-    | Dnn
+    | Dnn { std::cout << "Dnn" << std::endl; }
     | G04
 //    | attribute_command
     | AD
@@ -87,8 +86,8 @@ coordinate_command
 
 operation
     : D01 { std::cout << "operation.D01" << std::endl; }
-    /* | D02 { std::cout << "operation.D02" << std::endl; }
-    | D03 { std::cout << "operation.D03" << std::endl; } */
+    | D02 { std::cout << "operation.D02" << std::endl; }
+    | D03 { std::cout << "operation.D03" << std::endl; }
     ;
 
 interpolation_state_command
@@ -144,24 +143,8 @@ D01_X
     : X_C APERTURE_IDENT_SEGMENT '*'
     ;
 
-X_C
-    : 'X' INTEGER_NUMBER
-    ;
-
 D01_Y
     : Y_C APERTURE_IDENT_SEGMENT '*'
-    ;
-
-Y_C
-    : 'Y' INTEGER_NUMBER
-    ;
-
-D01_X
-    : X_C APERTURE_IDENT_SEGMENT '*'
-    ;
-
-X_C
-    : 'X' INTEGER_NUMBER
     ;
 
 D01_I_J
@@ -194,19 +177,67 @@ D01
     | X_Y_PREFIX { std::cout << "X_Y_PREFIX" << std::endl; } APERTURE_IDENT_SEGMENT '*'
     | X_Y_PREFIX { std::cout << "X_Y_PREFIX" << std::endl; } 'I' INTEGER_NUMBER 'J' INTEGER_NUMBER APERTURE_IDENT_SEGMENT '*'
     ;
-
+*/
 D02
-    : X_Y_PREFIX APERTURE_IDENT_MOVE '*'
+    : D02_X { std::cout << "D02_X" << std::endl; }
+    | D02_Y { std::cout << "D02_Y" << std::endl; }
+    | D02_X_Y { std::cout << "D02_X_Y" << std::endl; }
     ;
 
+D02_Y
+    : Y_C APERTURE_IDENT_MOVE '*'
+    ;
+
+D02_X
+    : X_C APERTURE_IDENT_MOVE '*'
+    ;
+
+D02_X_Y
+    : X_C Y_C APERTURE_IDENT_MOVE '*'
+    ;
+
+/*
 D03
     : X_Y_PREFIX APERTURE_IDENT_FLASH { std::cout << "D03" << std::endl; } '*' { std::cout << "*" << std::endl; }
     ;
     */
 
+
+
+
+D03
+    : D03_X { std::cout << "D03_X" << std::endl; }
+    | D03_Y { std::cout << "D03_Y" << std::endl; }
+    | D03_X_Y { std::cout << "D03_X_Y" << std::endl; }
+    ;
+
+D03_Y
+    : Y_C APERTURE_IDENT_FLASH '*'
+    ;
+
+D03_X
+    : X_C APERTURE_IDENT_FLASH '*'
+    ;
+
+D03_X_Y
+    : X_C Y_C APERTURE_IDENT_FLASH '*'
+    ;
+
+
+
+X_C
+    : 'X' INTEGER_NUMBER
+    ;
+
+Y_C
+    : 'Y' INTEGER_NUMBER
+    ;
+
+/*
 X_Y_PREFIX
     : 'X' { std::cout << "X=" << std::endl; } INTEGER_NUMBER 'Y' { std::cout << "Y=" << std::endl; } INTEGER_NUMBER
     ;
+*/
 
 G01
     : INTERPOLATION_LINEAR '*' { std::cout << "INTERPOLATION_LINEAR" << std::endl; }

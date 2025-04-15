@@ -13,13 +13,13 @@
 
 %%
 
-"#"[^(\r\n|\n)]* { printf("# comment\n"); return HASHTAG_COMMENT; }
+"//".* { /* DO NOTHING */ /* lex/flex, . won't match a newline. */ printf("CommentText: %s\n", yytext); }
 
-"."     { return DOT; }
-":"     { return COLON; }
-","     { return COMMA; }
-"("     { return OPENING_BRACKET; }
-")"     { return CLOSING_BRACKET; }
+"." { return DOT; }
+":" { return COLON; }
+"," { return COMMA; }
+"(" { return OPENING_BRACKET; }
+")" { return CLOSING_BRACKET; }
 
 "AD" { /*printf("AD_TOK\n");*/ return AD_TOK; }
 
@@ -39,9 +39,8 @@
 "D03" { /*printf("APERTURE_IDENT\n"); yylval.int_val = atoi(yytext);*/ return APERTURE_IDENT_FLASH; }
 "D"[0-9][0-9]+ { /*printf("APERTURE_IDENT\n"); yylval.int_val = atoi(yytext);*/ return APERTURE_IDENT; }
 
-(\r\n|\n) { /*printf("NEW_LINE\n");*/ return NEW_LINE; }
-
-[ \t]+	{ }
+(\r\n|\n) { }
+[ \t]+ { }
 
 "G04"[^"*"]*"*" { return G04_COMMENT; }
 
@@ -58,3 +57,6 @@
 /* //"#".*   {  } */
 /* <<EOF>>	{ return EOF; } */
 /* "#"[^(\r\n|\n)]*(\r\n|\n) { printf("# comment\n"); return HASHTAG_COMMENT; } */
+/* "#"[^(\r\n|\n)]* { printf("# comment\n"); return HASHTAG_COMMENT; } */
+/* (\r\n|\n) { printf("NEW_LINE\n"); return NEW_LINE; } */
+/* (\r\n|\n) { } */
