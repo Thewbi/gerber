@@ -30,10 +30,15 @@ int yyerror(const char *p) { printf("yyerror() - Error! '%s' | Line: %d \n", p, 
 
 %token <int_val> COORDINATE_DIGITS;
 %token <int_val> INTEGER_NUMBER DECIMAL_NUMBER;
-%token <string_val> APERTURE_IDENT APERTURE_IDENT_MOVE APERTURE_IDENT_SEGMENT APERTURE_IDENT_FLASH;
 
+%token <string_val> APERTURE_IDENT APERTURE_IDENT_MOVE APERTURE_IDENT_SEGMENT APERTURE_IDENT_FLASH;
+%token <string_val> USER_NAME FIELD
+
+%token <sym> DOT_PART DOT_FILEFUNCTION DOT_FILEPOLARITY DOT_SAMECOORDINATES DOT_CREATIONDATE DOT_GENERATIONSOFTWARE DOT_PROJECTID DOT_MD5
+%token <sym> DOT_APERFUNCTION DOT_DRILLTOLERANCE DOT_FLASHTEXT
+%token <sym> DOT_N DOT_P DOT_C DOT_CROT DOT_CMFR DOT_CMPN DOT_CVAL DOT_CMNT DOT_CFTP DOT_CPGN DOT_CPGD DOT_CHGT DOT_CLBN DOT_CLBD DOT_CSUP
 %token <sym> G04_COMMENT COMMENT HASHTAG_COMMENT
-%token <sym> AD_TOK
+%token <sym> AD_TOK TF_TOK
 %token <sym> NEW_LINE
 %token <sym> DOT COLON COMMA OPENING_BRACKET CLOSING_BRACKET
 %token <sym> INTERPOLATION_LINEAR INTERPOLATION_CW_CIRCULAR INTERPOLATION_CCW_CIRCULAR INTERPOLATION_BEFORE_FIRST_CIRCULAR_COMPAT
@@ -66,7 +71,7 @@ single_statement
     | interpolation_state_command { std::cout << "interpolation_state_command" << std::endl; }
     | Dnn { std::cout << "Dnn" << std::endl; }
     | G04
-//    | attribute_command
+    | attribute_command
     | AD
 //    | AM
     | coordinate_command
@@ -103,14 +108,14 @@ transformation_state_command
     | LR
     | LS
     ;
-
+*/
 attribute_command
     : TO
     | TD
     | TA
     | TF
     ;
-*/
+
 
 //# Graphics commands
 //#------------------
@@ -342,57 +347,92 @@ in_block_statement =
     |AB_statement
     ;
 
-
+*/
 //# Attribute commands
 //#-------------------
 
-TF = '%' ('TF' TF_atts) '*%';
-TA = '%' ('TA' TA_atts) '*%';
-TO = '%' ('TO' TO_atts) '*%';
-TD = '%' ('TD' [all_atts]) '*%';
+TF
+    : '%' TF_TOK TF_atts '*''%'
+    ;
 
-TF_atts =
-    |'.Part'                nxt_field
-    |'.FileFunction'       {nxt_field}*
-    |'.FilePolarity'        nxt_field
-    |'.SameCoordinates'    [nxt_field]
-    |'.CreationDate'        nxt_field
-    |'.GenerationSoftware'  nxt_field nxt_field [nxt_field]
-    |'.ProjectId'           nxt_field nxt_field  nxt_field
-    |'.MD5'                 nxt_field
-    |user_name
+TA
+    : '%' 'T''A' TA_atts '*''%'
     ;
-TA_atts =
-    |'.AperFunction'   {nxt_field}*
-    |'.DrillTolerance'  nxt_field   nxt_field
-    |'.FlashText'      {nxt_field}*
-    |user_name         {nxt_field}*
-    ;
-TO_atts =
-    |'.N'     nxt_field   {nxt_field}*
-    |'.P'     nxt_field    nxt_field   [nxt_field]
-    |'.C'     nxt_field
-    |'.CRot'  nxt_field
-    |'.CMfr'  nxt_field
-    |'.CMPN'  nxt_field
-    |'.CVal'  nxt_field
-    |'.CMnt'  nxt_field
-    |'.CFtp'  nxt_field
-    |'.CPgN'  nxt_field
-    |'.CPgD'  nxt_field
-    |'.CHgt'  nxt_field
-    |'.CLbN'  nxt_field
-    |'.CLbD'  nxt_field
-    |'.CSup'  nxt_field nxt_field {nxt_field nxt_field}*
-    |user_name {nxt_field}*
-    ;
-all_atts =
-    |TF_atts
-    |TA_atts
-    |TO_atts
-    ;
-nxt_field = ',' field;
 
+TO
+    : '%' 'T''O' TO_atts '*''%'
+    ;
+
+TD
+    : '%' 'T''D' all_atts '*''%'
+    ;
+
+TF_atts
+    : DOT_PART                  nxt_field
+    | DOT_FILEFUNCTION          nxt_fields
+    | DOT_FILEPOLARITY          nxt_field { std::cout << "DOT_FILEPOLARITY" << std::endl; }
+    | DOT_SAMECOORDINATES
+    | DOT_SAMECOORDINATES       nxt_field
+    | DOT_CREATIONDATE          nxt_field
+    | DOT_GENERATIONSOFTWARE    nxt_field nxt_field
+    | DOT_GENERATIONSOFTWARE    nxt_field nxt_field nxt_field
+    | DOT_PROJECTID             nxt_field nxt_field  nxt_field
+    | DOT_MD5                   nxt_field
+    | USER_NAME
+    ;
+
+TA_atts
+    : DOT_APERFUNCTION          nxt_fields
+    | DOT_DRILLTOLERANCE        nxt_field nxt_field
+    | DOT_FLASHTEXT             nxt_fields
+    | USER_NAME                 nxt_fields
+    ;
+
+TO_atts
+    : DOT_N                     nxt_field nxt_fields
+    | DOT_P                     nxt_field nxt_field
+    | DOT_P                     nxt_field nxt_field nxt_field
+    | DOT_C                     nxt_field
+    | DOT_CROT                  nxt_field
+    | DOT_CMFR                  nxt_field
+    | DOT_CMPN                  nxt_field
+    | DOT_CVAL                  nxt_field
+    | DOT_CMNT                  nxt_field
+    | DOT_CFTP                  nxt_field
+    | DOT_CPGN                  nxt_field
+    | DOT_CPGD                  nxt_field
+    | DOT_CHGT                  nxt_field
+    | DOT_CLBN                  nxt_field
+    | DOT_CLBD                  nxt_field
+    | DOT_CSUP                  double_nextfield_list
+    | USER_NAME                 nextfield_list
+    ;
+
+nextfield_list
+    : nxt_field
+    | nextfield_list nxt_field
+    ;
+
+double_nextfield_list
+    : nxt_field nxt_field
+    | double_nextfield_list nxt_field nxt_field
+    ;
+
+all_atts
+    : TF_atts
+    | TA_atts
+    | TO_atts
+    ;
+
+nxt_field
+    : COMMA FIELD
+    ;
+
+nxt_fields
+    : nxt_field
+    | nxt_fields nxt_field
+    ;
+/*
 //# Expressions
 //#------------
 
