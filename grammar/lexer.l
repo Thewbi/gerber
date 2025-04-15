@@ -13,6 +13,8 @@
 
 %%
 
+"#"[^(\r\n|\n)]* { printf("# comment\n"); return HASHTAG_COMMENT; }
+
 "."     { return DOT; }
 ":"     { return COLON; }
 ","     { return COMMA; }
@@ -23,7 +25,7 @@
 
 [1-6][56] { yylval.int_val = atoi(yytext); return COORDINATE_DIGITS; }
 
-[0-9]+ { /**/printf("INTEGER_NUMBER\n"); yylval.int_val = atoi(yytext); return INTEGER_NUMBER; }
+[0-9]+ { printf("INTEGER_NUMBER\n"); yylval.int_val = atoi(yytext); return INTEGER_NUMBER; }
 
 [+|-]?((([0-9]+)(\.[0-9]*)?)|(\.[0-9]+)) { /*printf("DECIMAL_NUMBER\n");*/ yylval.int_val = atoi(yytext); return DECIMAL_NUMBER; }
 
@@ -41,13 +43,18 @@
 
 [ \t]+	{ }
 
-"#".*   { /* DO NOTHING */ }
+"G04"[^"*"]*"*" { return G04_COMMENT; }
 
-<<EOF>>	{ return EOF; }
+<<EOF>> { static int once = 0; once++; if (once) { return EOF; } else { return '\n'; } }
 
-.       { return *yytext; }
+. { /*printf("yytext\n");*/ return *yytext; }
 
 %%
 
-/*
 /* [+|-]?((([0-9]+)(\.[0-9]*)?)|(\.[0-9]+)) { yylval.int_val = atoi(yytext); return DECIMAL_NUMBER; } */
+/* "G04"[^"*"]*"*" { return COMMENT; } */
+/* [^"*"]*"*" { return COMMENT; } */
+/* "G04" { return COMMENT_START; } */
+/* //"#".*   {  } */
+/* <<EOF>>	{ return EOF; } */
+/* "#"[^(\r\n|\n)]*(\r\n|\n) { printf("# comment\n"); return HASHTAG_COMMENT; } */

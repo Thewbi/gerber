@@ -32,6 +32,7 @@ int yyerror(const char *p) { printf("yyerror() - Error! '%s' | Line: %d \n", p, 
 %token <int_val> INTEGER_NUMBER DECIMAL_NUMBER;
 %token <string_val> APERTURE_IDENT APERTURE_IDENT_MOVE APERTURE_IDENT_SEGMENT APERTURE_IDENT_FLASH;
 
+%token <sym> G04_COMMENT COMMENT HASHTAG_COMMENT
 %token <sym> AD_TOK
 %token <sym> NEW_LINE
 %token <sym> DOT COLON COMMA OPENING_BRACKET CLOSING_BRACKET
@@ -45,7 +46,14 @@ start_symbol
 
 statements
     : statement
+    | hash_tag_comments
     | statements NEW_LINE statement
+    | statements NEW_LINE hash_tag_comments
+    ;
+
+hash_tag_comments
+    : HASHTAG_COMMENT
+    | hash_tag_comments HASHTAG_COMMENT
     ;
 
 statement
@@ -58,7 +66,7 @@ single_statement
     operation { std::cout << "operation" << std::endl; }
     | interpolation_state_command { std::cout << "interpolation_state_command" << std::endl; }
     | Dnn
-//    | G04
+    | G04
 //    | attribute_command
     | AD
 //    | AM
@@ -78,11 +86,9 @@ coordinate_command
     ;
 
 operation
-    :
-    //D01
-    //|
-    D02  { std::cout << "operation.D02" << std::endl; }
-    | D03 { std::cout << "operation.D03" << std::endl; }
+    : D01 { std::cout << "operation.D01" << std::endl; }
+    /* | D02 { std::cout << "operation.D02" << std::endl; }
+    | D03 { std::cout << "operation.D03" << std::endl; } */
     ;
 
 interpolation_state_command
@@ -118,13 +124,75 @@ MO
     | '%' 'M''O''I''N' '*''%' { std::cout << "MOIN" << std::endl; };
     ;
 
+D01_X_I_J
+    : X_C I_C J_C APERTURE_IDENT_SEGMENT '*'
+    ;
+
+D01_Y_I_J
+    : Y_C I_C J_C APERTURE_IDENT_SEGMENT '*'
+    ;
+
+D01_X_Y_I_J
+    : X_C Y_C I_C J_C APERTURE_IDENT_SEGMENT '*'
+    ;
+
+D01_X_Y
+    : X_C Y_C APERTURE_IDENT_SEGMENT '*'
+    ;
+
+D01_X
+    : X_C APERTURE_IDENT_SEGMENT '*'
+    ;
+
+X_C
+    : 'X' INTEGER_NUMBER
+    ;
+
+D01_Y
+    : Y_C APERTURE_IDENT_SEGMENT '*'
+    ;
+
+Y_C
+    : 'Y' INTEGER_NUMBER
+    ;
+
+D01_X
+    : X_C APERTURE_IDENT_SEGMENT '*'
+    ;
+
+X_C
+    : 'X' INTEGER_NUMBER
+    ;
+
+D01_I_J
+    : I_C J_C APERTURE_IDENT_SEGMENT '*'
+    ;
+
+I_C
+    : 'I' INTEGER_NUMBER
+    ;
+
+J_C
+    : 'J' INTEGER_NUMBER
+    ;
+
+D01
+    : D01_X { std::cout << "D01_X" << std::endl; }
+    | D01_Y { std::cout << "D01_Y" << std::endl; }
+    | D01_X_Y { std::cout << "D01_X_Y" << std::endl; }
+    | D01_I_J { std::cout << "D01_I_J" << std::endl; }
+    | D01_X_I_J { std::cout << "D01_X_I_J" << std::endl; }
+    | D01_Y_I_J { std::cout << "D01_Y_I_J" << std::endl; }
+    | D01_X_Y_I_J { std::cout << "D01_X_Y_I_J" << std::endl; }
+    ;
+
 /*
 D01 = (['X' integer] ['Y' integer] ['I' integer 'J' integer] 'D01') '*';
-*/
 
-X_Y_PREFIX
-    //: 'X' INTEGER_NUMBER 'Y' INTEGER_NUMBER
-    : 'X' { std::cout << "X=" << std::endl; } INTEGER_NUMBER 'Y' { std::cout << "Y=" << std::endl; } INTEGER_NUMBER
+D01
+    : 'I' { std::cout << "I=" << std::endl; } INTEGER_NUMBER { std::cout << "INTEGER_NUMBER" << std::endl; } 'J' { std::cout << "J=" << std::endl; } INTEGER_NUMBER { std::cout << "INTEGER_NUMBER" << std::endl; } APERTURE_IDENT_SEGMENT '*'
+    | X_Y_PREFIX { std::cout << "X_Y_PREFIX" << std::endl; } APERTURE_IDENT_SEGMENT '*'
+    | X_Y_PREFIX { std::cout << "X_Y_PREFIX" << std::endl; } 'I' INTEGER_NUMBER 'J' INTEGER_NUMBER APERTURE_IDENT_SEGMENT '*'
     ;
 
 D02
@@ -133,6 +201,11 @@ D02
 
 D03
     : X_Y_PREFIX APERTURE_IDENT_FLASH { std::cout << "D03" << std::endl; } '*' { std::cout << "*" << std::endl; }
+    ;
+    */
+
+X_Y_PREFIX
+    : 'X' { std::cout << "X=" << std::endl; } INTEGER_NUMBER 'Y' { std::cout << "Y=" << std::endl; } INTEGER_NUMBER
     ;
 
 G01
@@ -152,9 +225,11 @@ G75
     ;
 
 Dnn : APERTURE_IDENT '*' { std::cout << "Dnn" << std::endl; };
-/*
-G04 = ('G04' string) '*';
 
+G04 :
+    G04_COMMENT { std::cout << "G04_COMMENT" << std::endl; };
+    ;
+/*
 M02 = ('M02') '*';
 
 LP = '%' ('LP' ('C'|'D')) '*%';

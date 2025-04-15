@@ -11,7 +11,7 @@ extern int yydebug;
 
 int main(int argc, char **argv)
 {
-    std::cout << "test" << std::endl;
+    // std::cout << "test" << std::endl;
 
     yyin = fopen(argv[1], "r");
     if (!yyin) {
@@ -20,6 +20,7 @@ int main(int argc, char **argv)
 
     yy_flex_debug = 0;
     yydebug = 0;
+
     yyparse();
 
     return 0;
