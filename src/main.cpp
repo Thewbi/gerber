@@ -20,7 +20,10 @@ int main(int argc, char **argv)
         printf("Cannot open '%s'. Aborting.\n", argv[1]);
     }
 
+    // debug flex
     yy_flex_debug = 0;
+
+    // debug bison
     yydebug = 0;
 
     yyparse();

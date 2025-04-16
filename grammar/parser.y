@@ -34,11 +34,12 @@ int yyerror(const char *p) { printf("yyerror() - Error! '%s' | Line: %d \n", p, 
 %token <string_val> APERTURE_IDENT APERTURE_IDENT_MOVE APERTURE_IDENT_SEGMENT APERTURE_IDENT_FLASH;
 %token <string_val> USER_NAME FIELD
 
+%token <sym> ASTERISK_PERCENT
 %token <sym> DOT_PART DOT_FILEFUNCTION DOT_FILEPOLARITY DOT_SAMECOORDINATES DOT_CREATIONDATE DOT_GENERATIONSOFTWARE DOT_PROJECTID DOT_MD5
 %token <sym> DOT_APERFUNCTION DOT_DRILLTOLERANCE DOT_FLASHTEXT
 %token <sym> DOT_N DOT_P DOT_C DOT_CROT DOT_CMFR DOT_CMPN DOT_CVAL DOT_CMNT DOT_CFTP DOT_CPGN DOT_CPGD DOT_CHGT DOT_CLBN DOT_CLBD DOT_CSUP
 %token <sym> G04_COMMENT COMMENT HASHTAG_COMMENT
-%token <sym> AD_TOK TF_TOK
+%token <sym> AD_TOK TF_TOK C
 %token <sym> NEW_LINE
 %token <sym> DOT COLON COMMA OPENING_BRACKET CLOSING_BRACKET
 %token <sym> INTERPOLATION_LINEAR INTERPOLATION_CW_CIRCULAR INTERPOLATION_CCW_CIRCULAR INTERPOLATION_BEFORE_FIRST_CIRCULAR_COMPAT
@@ -71,7 +72,7 @@ single_statement
     | interpolation_state_command { std::cout << "interpolation_state_command" << std::endl; }
     | Dnn { std::cout << "Dnn" << std::endl; }
     | G04
-//    | attribute_command
+    | attribute_command
     | AD
 //    | AM
     | coordinate_command
@@ -101,6 +102,7 @@ interpolation_state_command
     | G03
     | G75
     ;
+
 /*
 transformation_state_command
     : LP
@@ -109,6 +111,7 @@ transformation_state_command
     | LS
     ;
 */
+
 attribute_command
     : TO
     | TD
@@ -116,13 +119,13 @@ attribute_command
     | TF
     ;
 
-
 //# Graphics commands
 //#------------------
 
 FS
     : '%' 'F''S' 'L''A' 'X' COORDINATE_DIGITS 'Y' COORDINATE_DIGITS '*''%' { std::cout << "FS " << $7 << " " << $9 << std::endl; }
     ;
+
 MO
     : '%' 'M''O''M''M' '*''%' { std::cout << "MOMM" << std::endl; };
     | '%' 'M''O''I''N' '*''%' { std::cout << "MOIN" << std::endl; };
@@ -273,13 +276,13 @@ LS = '%' ('LS' decimal) '*%';
 */
 
 AD
-    : '%' AD_TOK APERTURE_IDENT template_call '*''%' { std::cout << "AD" << std::endl; };
+    : AD_TOK APERTURE_IDENT template_call ASTERISK_PERCENT { std::cout << "[Parser] AD Rule" << std::endl; };
     ;
 
 //#aperture_shape = name [',' decimal {'X' decimal}*];
 
 template_call
-   : 'C' fst_par
+   : C fst_par
    //| 'C' fst_par nxt_par
    //| 'R' fst_par nxt_par [nxt_par]
    //| 'O' fst_par nxt_par [nxt_par]
@@ -349,8 +352,9 @@ in_block_statement =
 //# Attribute commands
 //#-------------------
 
+//    : '%' TF_TOK TF_atts '*''%'
 TF
-    : '%' TF_TOK TF_atts '*''%'
+    : TF_TOK TF_atts ASTERISK_PERCENT
     ;
 
 TA
@@ -366,17 +370,17 @@ TD
     ;
 
 TF_atts
-    : DOT_PART                  nxt_field
-    | DOT_FILEFUNCTION          nxt_fields
-    | DOT_FILEPOLARITY          nxt_field { std::cout << "DOT_FILEPOLARITY" << std::endl; }
-    | DOT_SAMECOORDINATES
-    | DOT_SAMECOORDINATES       nxt_field
-    | DOT_CREATIONDATE          nxt_field
-    | DOT_GENERATIONSOFTWARE    nxt_field nxt_field
-    | DOT_GENERATIONSOFTWARE    nxt_field nxt_field nxt_field
-    | DOT_PROJECTID             nxt_field nxt_field  nxt_field
-    | DOT_MD5                   nxt_field
-    | USER_NAME
+    : DOT_PART                  nxt_field { std::cout << "[PARSER] DOT_PART" << std::endl; }
+    | DOT_FILEFUNCTION          nxt_fields { std::cout << "[PARSER] DOT_FILEFUNCTION" << std::endl; }
+    | DOT_FILEPOLARITY          nxt_field { std::cout << "[PARSER] DOT_FILEPOLARITY" << std::endl; }
+    | DOT_SAMECOORDINATES                   { std::cout << "[PARSER] DOT_SAMECOORDINATES 0" << std::endl; }
+    | DOT_SAMECOORDINATES       nxt_field   { std::cout << "[PARSER] DOT_SAMECOORDINATES 1" << std::endl; }
+    | DOT_CREATIONDATE          nxt_field   { std::cout << "[PARSER] DOT_CREATIONDATE" << std::endl; }
+    | DOT_GENERATIONSOFTWARE    nxt_field nxt_field { std::cout << "[PARSER] DOT_GENERATIONSOFTWARE 2" << std::endl; }
+    | DOT_GENERATIONSOFTWARE    nxt_field nxt_field nxt_field { std::cout << "[PARSER] DOT_GENERATIONSOFTWARE 3" << std::endl; }
+    | DOT_PROJECTID             nxt_field nxt_field nxt_field   { std::cout << "[PARSER] DOT_PROJECTID" << std::endl; }
+    | DOT_MD5                   nxt_field   { std::cout << "[PARSER] DOT_MD5" << std::endl; }
+    | USER_NAME { std::cout << "[PARSER] USER_NAME" << std::endl; }
     ;
 
 TA_atts
