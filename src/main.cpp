@@ -13,6 +13,8 @@ int main(int argc, char **argv)
 {
     // std::cout << "test" << std::endl;
 
+    // TODO: preprocess file! Parser TF commands manually! They are to irregular and since flex does not support non-greedy matching easily this is a complete mess.
+
     yyin = fopen(argv[1], "r");
     if (!yyin) {
         printf("Cannot open '%s'. Aborting.\n", argv[1]);

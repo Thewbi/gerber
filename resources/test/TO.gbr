@@ -1,0 +1,6 @@
+%TO.C,R301*% // Attach reference descriptor R301
+%TO.CFtp,R_0805_2012Metric*% // Attach footprint
+%TO.CVal,4K7*% // Attach value
+%TO.CMnt,SMD*% // Attach mount type
+%TO.CRot,-90*% // Attach rotation
+%TO.C,R6*%

@@ -76,12 +76,12 @@
 
 <<EOF>> { static int once = 0; once++; if (once) { return EOF; } else { return '\n'; } }
 
-[^("%""\*"",""\.")]+ { printf("FIELD: %s\n", yytext); return FIELD; }
-[_0-9a-zA-Z$][_a-zA-Z0-9]* { /* Modification made here: USER_NAME cannot contain \. Otherwise the greedy flexer will convert TF.FilePolarity,Negative into a USER_NAME! */ printf("USER_NAME: %s\n", yytext); return USER_NAME; }
-
 . { /*printf("yytext\n");*/ return *yytext; }
 
 %%
+
+/* [^("%""\*"",""\.")]+ { printf("FIELD: %s\n", yytext); return FIELD; } */
+/* [_0-9a-zA-Z$][_a-zA-Z0-9]* { /* Modification made here: USER_NAME cannot contain \. Otherwise the greedy flexer will convert TF.FilePolarity,Negative into a USER_NAME! printf("USER_NAME: %s\n", yytext); return USER_NAME; } */
 
 /* [_0-9a-zA-Z$][\._a-zA-Z0-9]* { printf("USER_NAME: %s\n", yytext); return USER_NAME; } */
 /* [+|-]?((([0-9]+)(\.[0-9]*)?)|(\.[0-9]+)) { yylval.int_val = atoi(yytext); return DECIMAL_NUMBER; } */

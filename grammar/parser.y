@@ -71,7 +71,7 @@ single_statement
     | interpolation_state_command { std::cout << "interpolation_state_command" << std::endl; }
     | Dnn { std::cout << "Dnn" << std::endl; }
     | G04
-    | attribute_command
+//    | attribute_command
     | AD
 //    | AM
     | coordinate_command
@@ -183,6 +183,7 @@ D01
     | X_Y_PREFIX { std::cout << "X_Y_PREFIX" << std::endl; } 'I' INTEGER_NUMBER 'J' INTEGER_NUMBER APERTURE_IDENT_SEGMENT '*'
     ;
 */
+
 D02
     : D02_X { std::cout << "D02_X" << std::endl; }
     | D02_Y { std::cout << "D02_Y" << std::endl; }
@@ -207,9 +208,6 @@ D03
     ;
     */
 
-
-
-
 D03
     : D03_X { std::cout << "D03_X" << std::endl; }
     | D03_Y { std::cout << "D03_Y" << std::endl; }
@@ -227,8 +225,6 @@ D03_X
 D03_X_Y
     : X_C Y_C APERTURE_IDENT_FLASH '*'
     ;
-
-
 
 X_C
     : 'X' INTEGER_NUMBER
@@ -260,11 +256,13 @@ G75
     : INTERPOLATION_BEFORE_FIRST_CIRCULAR_COMPAT '*' { std::cout << "INTERPOLATION_BEFORE_FIRST_CIRCULAR_COMPAT" << std::endl; }
     ;
 
-Dnn : APERTURE_IDENT '*' { std::cout << "Dnn" << std::endl; };
+Dnn
+    : APERTURE_IDENT '*' { std::cout << "Dnn" << std::endl; };
 
-G04 :
-    G04_COMMENT { std::cout << "G04_COMMENT" << std::endl; };
+G04
+    : G04_COMMENT { std::cout << "G04_COMMENT" << std::endl; };
     ;
+
 /*
 M02 = ('M02') '*';
 

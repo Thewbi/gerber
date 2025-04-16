@@ -1,3 +1,8 @@
+# Example files
+
+https://www.ucamco.com/en/gerber/downloads
+
+
 # Specification
 
 https://www.ucamco.com/files/downloads/file_en/456/gerber-layer-format-specification-revision-2024-05_en.pdf?94b45d8745c1a068fd091f095a26ddeb
@@ -105,7 +110,7 @@ nanometer = 10^-9
 "
 To interpret a coordinate, it is first left padded with zeros till it has 3+6 digits.
 The decimal point is then positioned before the 6th digit starting from the right. There are then 6
-decimal digits. 
+decimal digits.
 "
 
 The format of numbers is first extended to match the 3.6 format then it is interpreted in mm units:
@@ -126,14 +131,14 @@ Y25		- Y coordinate - in 3.6 format is 000.000025. Then the unit mm/inch is adde
 *
 %
 
-Coordinate data is in fixed format decimals, expressed in the unit set by the MO command. 
+Coordinate data is in fixed format decimals, expressed in the unit set by the MO command.
 Leading zeros may be omitted.
 Therefore the MO command has to be used before the FS command.
 
 ```
 %MOMM*%
 %FSLAX36Y36*%
-``` 
+```
 
 
 
@@ -204,7 +209,7 @@ There are two kinds of aperture templates
 - standard apertures
 - aperture templates
 
-## Standard apertures. 
+## Standard apertures.
 
 They are pre-defined: the circle (C), rectangle (R), obround (O) and regular polygon (P). See 4.4.
 
@@ -216,7 +221,7 @@ Gerber files containing attribute commands (TF, TA, TO, TD) are called Gerber X2
 
 Attributes add meta-information.
 Attributes do not affect the image itself, they only add meta-information to the data.
-Attributes can be attached to objects, apertures or to the complete file. 
+Attributes can be attached to objects, apertures or to the complete file.
 
 This command defines an attribute indicating the file represents the top solder mask.
 
@@ -244,15 +249,15 @@ I do not know what effect these commands have yet
 
 ## G01* - 4.7.1 Linear Plotting (G01)
 
-G01 sets linear plot mode. In linear plot mode a D01 operation generates a linear segment, from the current point to the (X, Y) coordinates in the command. 
+G01 sets linear plot mode. In linear plot mode a D01 operation generates a linear segment, from the current point to the (X, Y) coordinates in the command.
 The current point is then set to the (X, Y) coordinates.
 
 The syntax is
 
-('G01') '*'; 
+('G01') '*';
 
 
-## G04 - 4.1 Comment (G04) - The G04 command is used for human readable comments. It does not affect the image. 
+## G04 - 4.1 Comment (G04) - The G04 command is used for human readable comments. It does not affect the image.
 
 The format is: ('G04' string) '*';
 
@@ -261,7 +266,7 @@ The format is: ('G04' string) '*';
 ```
 G02 = ('G02') '*';
 G03 = ('G03') '*';
-G75 = ('G75') '*'; 
+G75 = ('G75') '*';
 ```
 
 G02 Sets plot mode graphics state parameter to ‘clockwise circular plotting’
@@ -274,7 +279,7 @@ D01, D02 and D03 are the operations. An operation is a command consisting of coo
 followed by an operation code. Operations create the graphical objects and/or change the
 current point by operating on the coordinate data.
 
-## D01 - 2.3.1 Draws and Arcs - A draw object is created by a command with D01 code in linear plot mode. An arc object is created by a command with D01 code in circular plot mode. 
+## D01 - 2.3.1 Draws and Arcs - A draw object is created by a command with D01 code in linear plot mode. An arc object is created by a command with D01 code in circular plot mode.
 
 For some reason, the D01, D02 and D03 commands are postfixed! They are not placed at the beginning of a line.
 
@@ -284,15 +289,15 @@ X200Y200D02*
 X300Y-400D03*
 ```
 
-D01 creates a linear or circular line segment by plotting from the current point to the coordinate pair in the command. 
+D01 creates a linear or circular line segment by plotting from the current point to the coordinate pair in the command.
 Outside a region statement (see 2.3.2) these segments are converted to draw or arc objects by stroking them with the current aperture (see 2.3.1).
-Within a region statement these segments form a contour defining a region (see 4.10). 
+Within a region statement these segments form a contour defining a region (see 4.10).
 The effect of D01, e.g. whether a straight or circular segment is created, depends on the graphics state (see 2.3.2).
 
 D03 creates a flash object by flashing (replicating) the current aperture. The origin of the current aperture is positioned at the specified coordinate pair.
 
 
-D02 moves the current point (see 2.3.2) to the coordinate pair. No graphical object is created. 
+D02 moves the current point (see 2.3.2) to the coordinate pair. No graphical object is created.
 
 D10*
 D11*
@@ -305,7 +310,7 @@ G70 Set the ‘Unit’ to inch These historic codes perform a function handled b
 G90 Set the ‘Coordinate format’ to ‘Absolute notation’ These historic codes perform a function handled by the FS command. See 4.1. Very rarely used nowadays. Deprecated in 2012. G91 Set the ‘Coordinate format’ to ‘Incremental notation’
 G74 Sets single quadrant mode A more complicated way to create arcs. See 8.1.10. Rarely used, and then often without effect. Deprecated in 2020.
 M00 Program stop This historic code has the same effect as M02. See 4.13. Very rarely, if ever, used nowadays. Deprecated in 2012.
-M01 Optional stop This historic code has no effect. Very rarely, if ever, used nowadays. Deprecated in 2012. 
+M01 Optional stop This historic code has no effect. Very rarely, if ever, used nowadays. Deprecated in 2012.
 IP Sets the ‘Image polarity’ graphics state parameter This command has no effect in CAD to CAM workflows. Sometimes used, and then usually as %IPPOS*% to confirm the default and it then has no effect. As it is not clear how %IPNEG*% must be handled it is probably a waste of time to try to fully implement it, and sufficient to give a warning on a %IPNEG*% and skip it. Deprecated in 2013
 AS Sets the ‘Axes correspondence’ graphics state parameter
 
@@ -354,7 +359,7 @@ M02*
 
 ## Example 1
 
-Below is a small example Gerber file that creates a circle of 1.5 mm diameter centered on the origin. 
+Below is a small example Gerber file that creates a circle of 1.5 mm diameter centered on the origin.
 There is one command per line
 
 ```
