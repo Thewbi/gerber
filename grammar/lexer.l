@@ -12,7 +12,7 @@
 %option warn nodefault
 %option debug
 
-%x INSIDE_TF INSIDE_AD
+%x INSIDE_TF INSIDE_TA INSIDE_TO INSIDE_AD
 
 %%
 
@@ -21,12 +21,19 @@
 "." { return DOT; }
 ":" { return COLON; }
 <INSIDE_TF>"," { printf("[LEXER] COMMA\n"); return COMMA; }
+<INSIDE_TA>"," { printf("[LEXER] COMMA\n"); return COMMA; }
+<INSIDE_TO>"," { printf("[LEXER] COMMA\n"); return COMMA; }
 <INSIDE_AD>"," { printf("[LEXER] COMMA\n"); return COMMA; }
+
 <INSIDE_TF>"*%" { printf("[LEXER] ASTERISK_PERCENT\n"); BEGIN(INITIAL); return ASTERISK_PERCENT; }
+<INSIDE_TA>"*%" { printf("[LEXER] ASTERISK_PERCENT\n"); BEGIN(INITIAL); return ASTERISK_PERCENT; }
+<INSIDE_TO>"*%" { printf("[LEXER] ASTERISK_PERCENT\n"); BEGIN(INITIAL); return ASTERISK_PERCENT; }
 <INSIDE_AD>"*%" { printf("[LEXER] ASTERISK_PERCENT\n"); BEGIN(INITIAL); return ASTERISK_PERCENT; }
 
 "%AD" { printf("[LEXER] PERCENT AD_TOK\n"); BEGIN(INSIDE_AD); return AD_TOK; }
 "%TF" { printf("[LEXER] PERCENT TF_TOK\n"); BEGIN(INSIDE_TF); return TF_TOK; }
+"%TA" { printf("[LEXER] PERCENT TA_TOK\n"); BEGIN(INSIDE_TA); return TA_TOK; }
+"%TO" { printf("[LEXER] PERCENT TO_TOK\n"); BEGIN(INSIDE_TO); return TO_TOK; }
 
 <INSIDE_AD>"C"     { printf("[LEXER] C\n"); return C; }
 
@@ -45,25 +52,25 @@
 <INSIDE_TF>"\.ProjectId" { return DOT_PROJECTID; }
 <INSIDE_TF>"\.MD5" { return DOT_MD5; }
 
-<INSIDE_TF>"\.AperFunction" { return DOT_APERFUNCTION; }
-<INSIDE_TF>"\.DrillTolerance" { return DOT_DRILLTOLERANCE; }
-<INSIDE_TF>"\.FlashText" { return DOT_FLASHTEXT; }
+<INSIDE_TA>"\.AperFunction" { return DOT_APERFUNCTION; }
+<INSIDE_TA>"\.DrillTolerance" { return DOT_DRILLTOLERANCE; }
+<INSIDE_TA>"\.FlashText" { return DOT_FLASHTEXT; }
 
-<INSIDE_TF>"\.N" { return DOT_N; }
-<INSIDE_TF>"\.P" { return DOT_P; }
-<INSIDE_TF>"\.C" { return DOT_C; }
-<INSIDE_TF>"\.CRot" { return DOT_CROT; }
-<INSIDE_TF>"\.CMfr" { return DOT_CMFR; }
-<INSIDE_TF>"\.CMPN" { return DOT_CMPN; }
-<INSIDE_TF>"\.CVal" { return DOT_CVAL; }
-<INSIDE_TF>"\.CMnt" { return DOT_CMNT; }
-<INSIDE_TF>"\.CFtp" { return DOT_CFTP; }
-<INSIDE_TF>"\.CPgN" { return DOT_CPGN; }
-<INSIDE_TF>"\.CPgD" { return DOT_CPGD; }
-<INSIDE_TF>"\.CHgt" { return DOT_CHGT; }
-<INSIDE_TF>"\.CLbN" { return DOT_CLBN; }
-<INSIDE_TF>"\.CLbD" { return DOT_CLBD; }
-<INSIDE_TF>"\.CSup" { return DOT_CSUP; }
+<INSIDE_TO>"\.N" { return DOT_N; }
+<INSIDE_TO>"\.P" { return DOT_P; }
+<INSIDE_TO>"\.C" { return DOT_C; }
+<INSIDE_TO>"\.CRot" { return DOT_CROT; }
+<INSIDE_TO>"\.CMfr" { return DOT_CMFR; }
+<INSIDE_TO>"\.CMPN" { return DOT_CMPN; }
+<INSIDE_TO>"\.CVal" { return DOT_CVAL; }
+<INSIDE_TO>"\.CMnt" { return DOT_CMNT; }
+<INSIDE_TO>"\.CFtp" { return DOT_CFTP; }
+<INSIDE_TO>"\.CPgN" { return DOT_CPGN; }
+<INSIDE_TO>"\.CPgD" { return DOT_CPGD; }
+<INSIDE_TO>"\.CHgt" { return DOT_CHGT; }
+<INSIDE_TO>"\.CLbN" { return DOT_CLBN; }
+<INSIDE_TO>"\.CLbD" { return DOT_CLBD; }
+<INSIDE_TO>"\.CSup" { return DOT_CSUP; }
 
 "G01" { return INTERPOLATION_LINEAR; }
 "G02" { return INTERPOLATION_CW_CIRCULAR; }
@@ -73,10 +80,16 @@
 "D01" { /*printf("APERTURE_IDENT\n"); yylval.int_val = atoi(yytext);*/ return APERTURE_IDENT_SEGMENT; }
 "D02" { /*printf("APERTURE_IDENT\n"); yylval.int_val = atoi(yytext);*/ return APERTURE_IDENT_MOVE; }
 "D03" { /*printf("APERTURE_IDENT\n"); yylval.int_val = atoi(yytext);*/ return APERTURE_IDENT_FLASH; }
+
+"D"[0-9][0-9]+ { /*printf("APERTURE_IDENT\n"); yylval.int_val = atoi(yytext);*/ return APERTURE_IDENT; }
 <INSIDE_AD>"D"[0-9][0-9]+ { /*printf("APERTURE_IDENT\n"); yylval.int_val = atoi(yytext);*/ return APERTURE_IDENT; }
 
 <INSIDE_TF>[^%'\*',]+ { printf("FIELD: %s\n", yytext); return FIELD; }
+<INSIDE_TA>[^%'\*',]+ { printf("FIELD: %s\n", yytext); return FIELD; }
+<INSIDE_TO>[^%'\*',]+ { printf("FIELD: %s\n", yytext); return FIELD; }
 <INSIDE_TF>[_0-9a-zA-Z$][_a-zA-Z0-9]* { printf("USER_NAME: %s\n", yytext); return USER_NAME; }
+<INSIDE_TA>[_0-9a-zA-Z$][_a-zA-Z0-9]* { printf("USER_NAME: %s\n", yytext); return USER_NAME; }
+<INSIDE_TO>[_0-9a-zA-Z$][_a-zA-Z0-9]* { printf("USER_NAME: %s\n", yytext); return USER_NAME; }
 
 (\r\n|\n) { }
 [ \t]+ { }

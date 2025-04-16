@@ -39,7 +39,7 @@ int yyerror(const char *p) { printf("yyerror() - Error! '%s' | Line: %d \n", p, 
 %token <sym> DOT_APERFUNCTION DOT_DRILLTOLERANCE DOT_FLASHTEXT
 %token <sym> DOT_N DOT_P DOT_C DOT_CROT DOT_CMFR DOT_CMPN DOT_CVAL DOT_CMNT DOT_CFTP DOT_CPGN DOT_CPGD DOT_CHGT DOT_CLBN DOT_CLBD DOT_CSUP
 %token <sym> G04_COMMENT COMMENT HASHTAG_COMMENT
-%token <sym> AD_TOK TF_TOK C
+%token <sym> AD_TOK TF_TOK TA_TOK TO_TOK C
 %token <sym> NEW_LINE
 %token <sym> DOT COLON COMMA OPENING_BRACKET CLOSING_BRACKET
 %token <sym> INTERPOLATION_LINEAR INTERPOLATION_CW_CIRCULAR INTERPOLATION_CCW_CIRCULAR INTERPOLATION_BEFORE_FIRST_CIRCULAR_COMPAT
@@ -358,11 +358,11 @@ TF
     ;
 
 TA
-    : '%' 'T''A' TA_atts '*''%'
+    : TA_TOK TA_atts ASTERISK_PERCENT
     ;
 
 TO
-    : '%' 'T''O' TO_atts '*''%'
+    : TO_TOK TO_atts ASTERISK_PERCENT
     ;
 
 TD
@@ -391,23 +391,23 @@ TA_atts
     ;
 
 TO_atts
-    : DOT_N                     nxt_field nxt_fields
-    | DOT_P                     nxt_field nxt_field
-    | DOT_P                     nxt_field nxt_field nxt_field
-    | DOT_C                     nxt_field
-    | DOT_CROT                  nxt_field
-    | DOT_CMFR                  nxt_field
-    | DOT_CMPN                  nxt_field
-    | DOT_CVAL                  nxt_field
-    | DOT_CMNT                  nxt_field
-    | DOT_CFTP                  nxt_field
-    | DOT_CPGN                  nxt_field
-    | DOT_CPGD                  nxt_field
-    | DOT_CHGT                  nxt_field
-    | DOT_CLBN                  nxt_field
-    | DOT_CLBD                  nxt_field
-    | DOT_CSUP                  double_nextfield_list
-    | USER_NAME                 nextfield_list
+    : DOT_N                     nxt_field nxt_fields { std::cout << "[PARSER] TO_atts DOT_N" << std::endl; }
+    | DOT_P                     nxt_field nxt_field { std::cout << "[PARSER] TO_atts DOT_P 1" << std::endl; }
+    | DOT_P                     nxt_field nxt_field nxt_field { std::cout << "[PARSER] TO_atts DOT_P 2" << std::endl; }
+    | DOT_C                     nxt_field { std::cout << "[PARSER] TO_atts DOT_C" << std::endl; }
+    | DOT_CROT                  nxt_field { std::cout << "[PARSER] TO_atts DOT_CROT" << std::endl; }
+    | DOT_CMFR                  nxt_field { std::cout << "[PARSER] TO_atts DOT_CMFR" << std::endl; }
+    | DOT_CMPN                  nxt_field { std::cout << "[PARSER] TO_atts DOT_CMPN" << std::endl; }
+    | DOT_CVAL                  nxt_field { std::cout << "[PARSER] TO_atts DOT_CVAL" << std::endl; }
+    | DOT_CMNT                  nxt_field { std::cout << "[PARSER] TO_atts DOT_CMNT" << std::endl; }
+    | DOT_CFTP                  nxt_field { std::cout << "[PARSER] TO_atts DOT_CFTP" << std::endl; }
+    | DOT_CPGN                  nxt_field { std::cout << "[PARSER] TO_atts DOT_CPGN" << std::endl; }
+    | DOT_CPGD                  nxt_field { std::cout << "[PARSER] TO_atts DOT_CPGD" << std::endl; }
+    | DOT_CHGT                  nxt_field { std::cout << "[PARSER] TO_atts DOT_CHGT" << std::endl; }
+    | DOT_CLBN                  nxt_field { std::cout << "[PARSER] TO_atts DOT_CLBN" << std::endl; }
+    | DOT_CLBD                  nxt_field { std::cout << "[PARSER] TO_atts DOT_CLBD" << std::endl; }
+    | DOT_CSUP                  double_nextfield_list { std::cout << "[PARSER] TO_atts DOT_CSUP" << std::endl; }
+    | USER_NAME                 nextfield_list { std::cout << "[PARSER] TO_atts USER_NAME" << std::endl; }
     ;
 
 nextfield_list
