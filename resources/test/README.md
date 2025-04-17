@@ -4,8 +4,9 @@ Execute the command for the test files in the order below
 
 ```
 .\gerber.exe .\resources\test\AD.gbr
+.\gerber.exe .\resources\test\AM_0.gbr
 .\gerber.exe .\resources\test\AM.gbr
-.\gerber.exe .\resources\test\comment.gbr
+.\gerber.exe .\resources\test\G04_comment.gbr
 .\gerber.exe .\resources\test\D01.gbr
 .\gerber.exe .\resources\test\D02.gbr
 .\gerber.exe .\resources\test\D03.gbr
@@ -18,3 +19,6 @@ Execute the command for the test files in the order below
 .\gerber.exe .\resources\test\TF.gbr
 .\gerber.exe .\resources\test\TO.gbr
 ```
+
+TODO:
+add test for TD

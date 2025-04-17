@@ -1,6 +1,8 @@
 # Example files
 
 https://www.ucamco.com/en/gerber/downloads
+https://github.com/hsiang-lee/gerber-parser/tree/master/tests/test_data/gerber/gerber_files
+https://github.com/sousarbarb/V7DParser/tree/main/gbr
 
 
 # Specification

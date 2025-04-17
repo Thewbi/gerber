@@ -12,7 +12,7 @@
 %option warn nodefault
 %option debug
 
-%x INSIDE_TF INSIDE_TA INSIDE_TO INSIDE_AD
+%x INSIDE_TF INSIDE_TA INSIDE_TO INSIDE_AD INSIDE_AM INSIDE_AM_ZERO
 
 %%
 
@@ -30,18 +30,25 @@
 <INSIDE_TO>"*%" { printf("[LEXER] ASTERISK_PERCENT\n"); BEGIN(INITIAL); return ASTERISK_PERCENT; }
 <INSIDE_AD>"*%" { printf("[LEXER] ASTERISK_PERCENT\n"); BEGIN(INITIAL); return ASTERISK_PERCENT; }
 
+"%AM" { printf("[LEXER] PERCENT AM_TOK\n"); BEGIN(INSIDE_AM); return AM_TOK; }
 "%AD" { printf("[LEXER] PERCENT AD_TOK\n"); BEGIN(INSIDE_AD); return AD_TOK; }
 "%TF" { printf("[LEXER] PERCENT TF_TOK\n"); BEGIN(INSIDE_TF); return TF_TOK; }
 "%TA" { printf("[LEXER] PERCENT TA_TOK\n"); BEGIN(INSIDE_TA); return TA_TOK; }
 "%TO" { printf("[LEXER] PERCENT TO_TOK\n"); BEGIN(INSIDE_TO); return TO_TOK; }
 
-<INSIDE_AD>"C"     { printf("[LEXER] C\n"); return C; }
+<INSIDE_AD>"C" { printf("[LEXER] C\n"); return C; }
 
 [1-6][56] { yylval.int_val = atoi(yytext); return COORDINATE_DIGITS; }
 
 [0-9]+ { printf("INTEGER_NUMBER\n"); yylval.int_val = atoi(yytext); return INTEGER_NUMBER; }
 
+[+|-] { printf("ADD_SUB_OPERATOR\n"); return ADD_SUB_OPERATOR; }
+[x|\/] { printf("MUL_DIV_OPERATOR\n"); return MUL_DIV_OPERATOR; }
+
 <INSIDE_AD>[+|-]?((([0-9]+)(\.[0-9]*)?)|(\.[0-9]+)) { /*printf("DECIMAL_NUMBER\n");*/ yylval.int_val = atoi(yytext); return DECIMAL_NUMBER; }
+
+[0-9]*[1-9][0-9]* { printf("POSITIVE_INTEGER\n"); yylval.int_val = atoi(yytext); return POSITIVE_INTEGER; }
+((([0-9]+)(\.[0-9]*)?)|(\.[0-9]+)) { printf("UNSIGNED_DECIMAL_NUMBER\n"); yylval.int_val = atoi(yytext); return UNSIGNED_DECIMAL_NUMBER; }
 
 <INSIDE_TF>"\.Part" { return DOT_PART; }
 <INSIDE_TF>"\.FileFunction" { return DOT_FILEFUNCTION; }
@@ -81,20 +88,33 @@
 "D02" { /*printf("APERTURE_IDENT\n"); yylval.int_val = atoi(yytext);*/ return APERTURE_IDENT_MOVE; }
 "D03" { /*printf("APERTURE_IDENT\n"); yylval.int_val = atoi(yytext);*/ return APERTURE_IDENT_FLASH; }
 
-"D"[0-9][0-9]+ { /*printf("APERTURE_IDENT\n"); yylval.int_val = atoi(yytext);*/ return APERTURE_IDENT; }
-<INSIDE_AD>"D"[0-9][0-9]+ { /*printf("APERTURE_IDENT\n"); yylval.int_val = atoi(yytext);*/ return APERTURE_IDENT; }
+"D"[0-9][0-9]+ { yylval.int_val = atoi(yytext); printf("[APERTURE_IDENT] APERTURE_IDENT: %s\n", yytext); return APERTURE_IDENT; }
+<INSIDE_AD>"D"[0-9][0-9]+ { yylval.int_val = atoi(yytext); printf("[APERTURE_IDENT] APERTURE_IDENT: %s\n", yytext); return APERTURE_IDENT; }
 
-<INSIDE_TF>[^%'\*',]+ { printf("FIELD: %s\n", yytext); return FIELD; }
-<INSIDE_TA>[^%'\*',]+ { printf("FIELD: %s\n", yytext); return FIELD; }
-<INSIDE_TO>[^%'\*',]+ { printf("FIELD: %s\n", yytext); return FIELD; }
-<INSIDE_TF>[_0-9a-zA-Z$][_a-zA-Z0-9]* { printf("USER_NAME: %s\n", yytext); return USER_NAME; }
-<INSIDE_TA>[_0-9a-zA-Z$][_a-zA-Z0-9]* { printf("USER_NAME: %s\n", yytext); return USER_NAME; }
-<INSIDE_TO>[_0-9a-zA-Z$][_a-zA-Z0-9]* { printf("USER_NAME: %s\n", yytext); return USER_NAME; }
+<INSIDE_TF>[^%'\*',]+ { printf("[LEXER] FIELD: %s\n", yytext); return FIELD; }
+<INSIDE_TA>[^%'\*',]+ { printf("[LEXER] FIELD: %s\n", yytext); return FIELD; }
+<INSIDE_TO>[^%'\*',]+ { printf("[LEXER] FIELD: %s\n", yytext); return FIELD; }
+
+<INSIDE_TF>[_0-9a-zA-Z$][_a-zA-Z0-9]* { printf("[LEXER] USER_NAME: %s\n", yytext); return USER_NAME; }
+<INSIDE_TA>[_0-9a-zA-Z$][_a-zA-Z0-9]* { printf("[LEXER] USER_NAME: %s\n", yytext); return USER_NAME; }
+<INSIDE_TO>[_0-9a-zA-Z$][_a-zA-Z0-9]* { printf("[LEXER] USER_NAME: %s\n", yytext); return USER_NAME; }
+
+<INSIDE_AM>"," { printf("[LEXER] COMMA\n"); return COMMA; }
+<INSIDE_AM>"%" { printf("[LEXER] PERCENT\n"); return PERCENT; }
+<INSIDE_AM>"*" { printf("[LEXER] ASTERISK\n"); return ASTERISK; }
+<INSIDE_AM>"=" { printf("[LEXER] EQUALS\n"); return EQUALS; }
+<INSIDE_AM>"$" { printf("[LEXER] DOLLAR_SIGN\n"); return DOLLAR_SIGN; }
+<INSIDE_AM>[\._a-zA-Z$][\._a-zA-Z0-9]* { printf("NAME: %s\n", yytext); return NAME; }
+<INSIDE_AM>"0" { printf("0: %s\n", yytext); BEGIN(INSIDE_AM_ZERO); return AM_ZERO; }
+<INSIDE_AM>(\r\n|\n) { }
+<INSIDE_AM>[ \t]+ { }
+<INSIDE_AM_ZERO>[^%'\*']+ { printf("[LEXER] STRING: \"%s\"\n", yytext); return STRING; }
+<INSIDE_AM_ZERO>['\*'] { printf("[LEXER] ASTERISK: \"%s\"\n", yytext); BEGIN(INSIDE_AM); return ASTERISK; }
 
 (\r\n|\n) { }
 [ \t]+ { }
 
-"G04"[^"*"]*"*" { return G04_COMMENT; }
+"G04"[^"*"]*"*" { printf("[LEXER] G04 Comment: \"%s\"\n", yytext); return G04_COMMENT; }
 
 <<EOF>> { static int once = 0; once++; if (once) { return EOF; } else { return '\n'; } }
 

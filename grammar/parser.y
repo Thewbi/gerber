@@ -29,20 +29,23 @@ int yyerror(const char *p) { printf("yyerror() - Error! '%s' | Line: %d \n", p, 
 };
 
 %token <int_val> COORDINATE_DIGITS;
-%token <int_val> INTEGER_NUMBER DECIMAL_NUMBER;
+%token <int_val> INTEGER_NUMBER DECIMAL_NUMBER UNSIGNED_DECIMAL_NUMBER POSITIVE_INTEGER;
 
 %token <string_val> APERTURE_IDENT APERTURE_IDENT_MOVE APERTURE_IDENT_SEGMENT APERTURE_IDENT_FLASH;
-%token <string_val> USER_NAME FIELD
+%token <string_val> USER_NAME FIELD NAME STRING
 
-%token <sym> ASTERISK_PERCENT
+%token <sym> PERCENT ASTERISK ASTERISK_PERCENT
 %token <sym> DOT_PART DOT_FILEFUNCTION DOT_FILEPOLARITY DOT_SAMECOORDINATES DOT_CREATIONDATE DOT_GENERATIONSOFTWARE DOT_PROJECTID DOT_MD5
 %token <sym> DOT_APERFUNCTION DOT_DRILLTOLERANCE DOT_FLASHTEXT
 %token <sym> DOT_N DOT_P DOT_C DOT_CROT DOT_CMFR DOT_CMPN DOT_CVAL DOT_CMNT DOT_CFTP DOT_CPGN DOT_CPGD DOT_CHGT DOT_CLBN DOT_CLBD DOT_CSUP
 %token <sym> G04_COMMENT COMMENT HASHTAG_COMMENT
-%token <sym> AD_TOK TF_TOK TA_TOK TO_TOK C
+%token <sym> AD_TOK TF_TOK TA_TOK TO_TOK AM_TOK C
 %token <sym> NEW_LINE
-%token <sym> DOT COLON COMMA OPENING_BRACKET CLOSING_BRACKET
+%token <sym> DOT COLON COMMA OPENING_BRACKET CLOSING_BRACKET EQUALS DOLLAR_SIGN
 %token <sym> INTERPOLATION_LINEAR INTERPOLATION_CW_CIRCULAR INTERPOLATION_CCW_CIRCULAR INTERPOLATION_BEFORE_FIRST_CIRCULAR_COMPAT
+%token <sym> ADD_SUB_OPERATOR MUL_DIV_OPERATOR
+
+%token <sym> AM_ZERO
 
 %%
 
@@ -74,7 +77,7 @@ single_statement
     | G04
     | attribute_command
     | AD
-//    | AM
+    | AM
     | coordinate_command
 //    | transformation_state_command
     ;
@@ -282,7 +285,7 @@ AD
 //#aperture_shape = name [',' decimal {'X' decimal}*];
 
 template_call
-   : C fst_par
+   : C fst_par { std::cout << "[Parser] template_call Rule" << std::endl; };
    //| 'C' fst_par nxt_par
    //| 'R' fst_par nxt_par [nxt_par]
    //| 'O' fst_par nxt_par [nxt_par]
@@ -298,34 +301,60 @@ nxt_par
     : 'X' DECIMAL_NUMBER
     ;
 
-/*
+//# Macro Definition
+//#-------------------
 
-AM = '%' ('AM' macro_name macro_body) '%';
+AM :
+    AM_TOK macro_name macro_body PERCENT
+    ;
 
-macro_name = name '*';
+macro_name
+    : NAME ASTERISK { std::cout << "[Parser] macro_name Rule" << std::endl; }
+    ;
 
-macro_body = {in_macro_block}+;
+macro_body
+    : in_macro_block
+    | macro_body in_macro_block
+    ;
 
-in_macro_block =
-    | primitive
+in_macro_block
+    : primitive
     | variable_definition
     ;
 
-variable_definition = (macro_variable '=' expression) '*';
-
-macro_variable = '$' positive_integer;
-
-primitive =
-    |('0'  string) '*'
-    |('1'  par par par par [par]) '*'
-    |('20' par par par par par par par) '*'
-    |('21' par par par par par par) '*'
-    |('4'  par par par par {par par}+ par) '*'
-    |('5'  par par par par par par) '*'
-    |('7'  par par par par par par) '*'
+variable_definition
+    : macro_variable EQUALS expression ASTERISK
     ;
 
-par = ',' (expression);
+macro_variable
+    : DOLLAR_SIGN POSITIVE_INTEGER
+    ;
+
+primitive
+    : AM_ZERO STRING ASTERISK { std::cout << "[Parser] primitive-0 Rule" << std::endl; }
+    | '1' par par par par ASTERISK
+    | '1' par par par par par ASTERISK
+    | '2''0' par par par par par par par ASTERISK
+    | '2''1' par par par par par par ASTERISK
+    | '4' par par par par primitive_four_list par ASTERISK
+    | '5' par par par par par par ASTERISK
+    | '7' par par par par par par ASTERISK
+    ;
+
+primitive_four_list
+    : primitive_four_list primitive_four
+    | primitive_four
+    ;
+
+primitive_four
+    : par par
+    ;
+
+par
+    : COMMA expression
+    ;
+
+/*
 
 //# Compound statements
 
@@ -349,6 +378,8 @@ in_block_statement =
     ;
 
 */
+
+
 //# Attribute commands
 //#-------------------
 
@@ -434,25 +465,37 @@ nxt_fields
     : nxt_field
     | nxt_fields nxt_field
     ;
-/*
+
+
+
+
 //# Expressions
 //#------------
 
-expression =
-    |{addsub_operator term}+
-    |expression addsub_operator term
-    |term
-    ;
-term =
-    |term muldiv_operator factor
-    |factor
-    ;
-factor =
-    | '(' ~ expression ')'
-    |macro_variable
-    |unsigned_decimal
+expression
+    : add_sub_term_list
+    | expression ADD_SUB_OPERATOR term
+    | term
     ;
 
+add_sub_term_list
+    : add_sub_term_list ADD_SUB_OPERATOR term
+    | ADD_SUB_OPERATOR term
+    ;
+
+term
+    : term MUL_DIV_OPERATOR factor
+    | factor
+    ;
+
+factor
+    : '(' '~' expression ')'
+    | macro_variable
+    | UNSIGNED_DECIMAL_NUMBER
+    ;
+
+
+/*
 //# Tokens, by regex
 //#-----------------
 
