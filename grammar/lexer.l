@@ -1,3 +1,8 @@
+/**
+ * MODIFICATIONS:
+ * - the type POSITIVE_INTEGER is not used. Instead a UNSIGNED_DECIMAL_NUMBER is lexed
+ */
+
 %{
 
 #include <stdio.h>
@@ -12,11 +17,12 @@
 %option warn nodefault
 %option debug
 
-%x INSIDE_TF INSIDE_TA INSIDE_TO INSIDE_AD INSIDE_AM INSIDE_AM_ZERO
+%x INSIDE_TF INSIDE_TA INSIDE_TO INSIDE_AD INSIDE_AM INSIDE_AM_ZERO INSIDE_AM_ONE
 
 %%
 
 "//".* { /* DO NOTHING */ /* lex/flex, . won't match a newline. */ printf("CommentText: %s\n", yytext); }
+
 
 "." { return DOT; }
 ":" { return COLON; }
@@ -40,15 +46,14 @@
 
 [1-6][56] { yylval.int_val = atoi(yytext); return COORDINATE_DIGITS; }
 
-[0-9]+ { printf("INTEGER_NUMBER\n"); yylval.int_val = atoi(yytext); return INTEGER_NUMBER; }
+[0-9]+ { printf("[LEXER] INTEGER_NUMBER\n"); yylval.int_val = atoi(yytext); return INTEGER_NUMBER; }
 
-[+|-] { printf("ADD_SUB_OPERATOR\n"); return ADD_SUB_OPERATOR; }
-[x|\/] { printf("MUL_DIV_OPERATOR\n"); return MUL_DIV_OPERATOR; }
+[+|-] { printf("[LEXER] ADD_SUB_OPERATOR\n"); return ADD_SUB_OPERATOR; }
+[x|\/] { printf("[LEXER] MUL_DIV_OPERATOR\n"); return MUL_DIV_OPERATOR; }
 
 <INSIDE_AD>[+|-]?((([0-9]+)(\.[0-9]*)?)|(\.[0-9]+)) { /*printf("DECIMAL_NUMBER\n");*/ yylval.int_val = atoi(yytext); return DECIMAL_NUMBER; }
 
-[0-9]*[1-9][0-9]* { printf("POSITIVE_INTEGER\n"); yylval.int_val = atoi(yytext); return POSITIVE_INTEGER; }
-((([0-9]+)(\.[0-9]*)?)|(\.[0-9]+)) { printf("UNSIGNED_DECIMAL_NUMBER\n"); yylval.int_val = atoi(yytext); return UNSIGNED_DECIMAL_NUMBER; }
+((([0-9]+)(\.[0-9]*)?)|(\.[0-9]+)) { printf("[LEXER] UNSIGNED_DECIMAL_NUMBER\n"); yylval.int_val = atoi(yytext); return UNSIGNED_DECIMAL_NUMBER; }
 
 <INSIDE_TF>"\.Part" { return DOT_PART; }
 <INSIDE_TF>"\.FileFunction" { return DOT_FILEFUNCTION; }
@@ -101,15 +106,27 @@
 
 <INSIDE_AM>"," { printf("[LEXER] COMMA\n"); return COMMA; }
 <INSIDE_AM>"%" { printf("[LEXER] PERCENT\n"); return PERCENT; }
-<INSIDE_AM>"*" { printf("[LEXER] ASTERISK\n"); return ASTERISK; }
+<INSIDE_AM>['\*'] { printf("[LEXER] ASTERISK\n"); return ASTERISK; }
 <INSIDE_AM>"=" { printf("[LEXER] EQUALS\n"); return EQUALS; }
 <INSIDE_AM>"$" { printf("[LEXER] DOLLAR_SIGN\n"); return DOLLAR_SIGN; }
-<INSIDE_AM>[\._a-zA-Z$][\._a-zA-Z0-9]* { printf("NAME: %s\n", yytext); return NAME; }
+<INSIDE_AM>[\._a-zA-Z$][\._a-zA-Z0-9]* { printf("[LEXER] NAME: %s\n", yytext); return NAME; }
 <INSIDE_AM>"0" { printf("0: %s\n", yytext); BEGIN(INSIDE_AM_ZERO); return AM_ZERO; }
+<INSIDE_AM>"1" { printf("1: %s\n", yytext); BEGIN(INSIDE_AM_ONE); return AM_ONE; }
 <INSIDE_AM>(\r\n|\n) { }
 <INSIDE_AM>[ \t]+ { }
+
 <INSIDE_AM_ZERO>[^%'\*']+ { printf("[LEXER] STRING: \"%s\"\n", yytext); return STRING; }
 <INSIDE_AM_ZERO>['\*'] { printf("[LEXER] ASTERISK: \"%s\"\n", yytext); BEGIN(INSIDE_AM); return ASTERISK; }
+
+<INSIDE_AM_ONE>"%" { printf("[LEXER] PERCENT\n"); return PERCENT; }
+<INSIDE_AM_ONE>['\*'] { printf("[LEXER] ASTERISK: \"%s\"\n", yytext); BEGIN(INSIDE_AM); return ASTERISK; }
+<INSIDE_AM_ONE>"//".* { /* DO NOTHING */ /* lex/flex, . won't match a newline. */ printf("CommentText: %s\n", yytext); }
+<INSIDE_AM_ONE>"," { printf("[LEXER] COMMA\n"); return COMMA; }
+<INSIDE_AM_ONE>[+|-] { printf("[LEXER] ADD_SUB_OPERATOR\n"); return ADD_SUB_OPERATOR; }
+<INSIDE_AM_ONE>[x|\/] { printf("[LEXER] MUL_DIV_OPERATOR\n"); return MUL_DIV_OPERATOR; }
+<INSIDE_AM_ONE>((([0-9]+)(\.[0-9]*)?)|(\.[0-9]+)) { printf("[LEXER] UNSIGNED_DECIMAL_NUMBER\n"); yylval.int_val = atoi(yytext); return UNSIGNED_DECIMAL_NUMBER; }
+
+<INSIDE_AM_ONE>"$" { printf("[LEXER] DOLLAR_SIGN\n"); return DOLLAR_SIGN; }
 
 (\r\n|\n) { }
 [ \t]+ { }
@@ -122,6 +139,8 @@
 
 %%
 
+/* [0-9]*[1-9][0-9]* { printf("[LEXER] POSITIVE_INTEGER\n"); yylval.int_val = atoi(yytext); return POSITIVE_INTEGER; } */
+/* <INSIDE_AM_ONE>[0-9]*[1-9][0-9]* { printf("[LEXER] POSITIVE_INTEGER\n"); yylval.int_val = atoi(yytext); return POSITIVE_INTEGER; } */
 /*
 "(" { return OPENING_BRACKET; }
 ")" { return CLOSING_BRACKET; }

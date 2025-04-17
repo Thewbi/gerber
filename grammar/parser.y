@@ -29,7 +29,9 @@ int yyerror(const char *p) { printf("yyerror() - Error! '%s' | Line: %d \n", p, 
 };
 
 %token <int_val> COORDINATE_DIGITS;
-%token <int_val> INTEGER_NUMBER DECIMAL_NUMBER UNSIGNED_DECIMAL_NUMBER POSITIVE_INTEGER;
+
+/* POSITIVE_INTEGER */
+%token <int_val> INTEGER_NUMBER DECIMAL_NUMBER UNSIGNED_DECIMAL_NUMBER;
 
 %token <string_val> APERTURE_IDENT APERTURE_IDENT_MOVE APERTURE_IDENT_SEGMENT APERTURE_IDENT_FLASH;
 %token <string_val> USER_NAME FIELD NAME STRING
@@ -45,7 +47,7 @@ int yyerror(const char *p) { printf("yyerror() - Error! '%s' | Line: %d \n", p, 
 %token <sym> INTERPOLATION_LINEAR INTERPOLATION_CW_CIRCULAR INTERPOLATION_CCW_CIRCULAR INTERPOLATION_BEFORE_FIRST_CIRCULAR_COMPAT
 %token <sym> ADD_SUB_OPERATOR MUL_DIV_OPERATOR
 
-%token <sym> AM_ZERO
+%token <sym> AM_ZERO AM_ONE
 
 %%
 
@@ -305,7 +307,7 @@ nxt_par
 //#-------------------
 
 AM :
-    AM_TOK macro_name macro_body PERCENT
+    AM_TOK macro_name macro_body PERCENT { std::cout << "[Parser] AM Rule" << std::endl; }
     ;
 
 macro_name
@@ -327,12 +329,12 @@ variable_definition
     ;
 
 macro_variable
-    : DOLLAR_SIGN POSITIVE_INTEGER
+    : DOLLAR_SIGN UNSIGNED_DECIMAL_NUMBER
     ;
 
 primitive
     : AM_ZERO STRING ASTERISK { std::cout << "[Parser] primitive-0 Rule" << std::endl; }
-    | '1' par par par par ASTERISK
+    | AM_ONE par par par par ASTERISK { std::cout << "[Parser] primitive-1 Rule" << std::endl; }
     | '1' par par par par par ASTERISK
     | '2''0' par par par par par par par ASTERISK
     | '2''1' par par par par par par ASTERISK
@@ -379,11 +381,9 @@ in_block_statement =
 
 */
 
-
 //# Attribute commands
 //#-------------------
 
-//    : '%' TF_TOK TF_atts '*''%'
 TF
     : TF_TOK TF_atts ASTERISK_PERCENT
     ;
@@ -466,15 +466,11 @@ nxt_fields
     | nxt_fields nxt_field
     ;
 
-
-
-
 //# Expressions
 //#------------
 
 expression
     : add_sub_term_list
-    | expression ADD_SUB_OPERATOR term
     | term
     ;
 
@@ -488,12 +484,17 @@ term
     | factor
     ;
 
+/*
 factor
     : '(' '~' expression ')'
     | macro_variable
     | UNSIGNED_DECIMAL_NUMBER
     ;
-
+*/
+factor
+    : macro_variable { std::cout << "[Parser] macro_variable Rule" << std::endl; }
+    | UNSIGNED_DECIMAL_NUMBER
+    ;
 
 /*
 //# Tokens, by regex
