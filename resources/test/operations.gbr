@@ -4,3 +4,5 @@ X0Y0D02* // 234
 X0Y0D01* // D01 is the aperture segment operation
 X0Y0D02* // D02 is the aperture move operation
 X0Y0D03* // D03 is the aperture flash operation
+
+M02*

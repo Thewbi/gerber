@@ -4,3 +4,5 @@
 %TO.CMnt,SMD*% // Attach mount type
 %TO.CRot,-90*% // Attach rotation
 %TO.C,R6*%
+
+M02*
