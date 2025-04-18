@@ -21,7 +21,7 @@ int main(int argc, char **argv)
     }
 
     // debug flex
-    yy_flex_debug = 1;
+    yy_flex_debug = 0;
 
     // debug bison
     yydebug = 0;

@@ -18,4 +18,4 @@ parser.h: grammar/parser.y
 .PHONY: clean
 
 clean:
-	rm -f gerber.exe parser.h parser.c lex.yy.c parser.output
+	rm -f gerber.exe parser.h parser.c lex.yy.c build/parser.output

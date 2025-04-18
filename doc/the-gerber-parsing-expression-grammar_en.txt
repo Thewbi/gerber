@@ -12,16 +12,16 @@ single_statement =
     | operation
     | interpolation_state_command
     | Dnn
-    | G04               
-    | attribute_command             
+    | G04
+    | attribute_command
     | AD
     | AM
-    | coordinate_command	
+    | coordinate_command
     | transformation_state_command
     ;
 compound_statement =
     | region_statement
-    | SR_statement	
+    | SR_statement
     | AB_statement
     ;
 
@@ -139,7 +139,7 @@ in_block_statement =
 # Attribute commands
 #-------------------
 
-TF = '%' ('TF' TF_atts) '*%'; 
+TF = '%' ('TF' TF_atts) '*%';
 TA = '%' ('TA' TA_atts) '*%';
 TO = '%' ('TO' TO_atts) '*%';
 TD = '%' ('TD' [all_atts]) '*%';
@@ -164,7 +164,7 @@ TA_atts =
 TO_atts =
     |'.N'     nxt_field   {nxt_field}*
     |'.P'     nxt_field    nxt_field   [nxt_field]
-    |'.C'     nxt_field 
+    |'.C'     nxt_field
     |'.CRot'  nxt_field
     |'.CMfr'  nxt_field
     |'.CMPN'  nxt_field
@@ -190,18 +190,18 @@ nxt_field = ',' field;
 # Expressions
 #------------
 
-expression = 
+expression =
     |{addsub_operator term}+
     |expression addsub_operator term
-    |term 
+    |term
     ;
-term = 
+term =
     |term muldiv_operator factor
-    |factor 
+    |factor
     ;
-factor = 
+factor =
     | '(' ~ expression ')'
-    |macro_variable 
+    |macro_variable
     |unsigned_decimal
     ;
 

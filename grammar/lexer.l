@@ -57,7 +57,10 @@
 
 <INSIDE_AD>"C" { printf("[LEXER] C\n"); return C; }
 
-[1-6][56] { yylval.int_val = atoi(yytext); return COORDINATE_DIGITS; }
+    /*
+    [1-6][56] { yylval.int_val = atoi(yytext); return COORDINATE_DIGITS; }
+    */
+[1-6][3456] { yylval.int_val = atoi(yytext); return COORDINATE_DIGITS; }
 
 [0-9]+ { printf("[LEXER] INTEGER_NUMBER\n"); yylval.int_val = atoi(yytext); return INTEGER_NUMBER; }
 
@@ -97,6 +100,8 @@
 <INSIDE_TO>"\.CLbD" { return DOT_CLBD; }
 <INSIDE_TO>"\.CSup" { return DOT_CSUP; }
 
+"M02" { return END_OF_FILE; }
+
 "G01" { return INTERPOLATION_LINEAR; }
 "G02" { return INTERPOLATION_CW_CIRCULAR; }
 "G03" { return INTERPOLATION_CCW_CIRCULAR; }
@@ -107,6 +112,8 @@
 "LPD" { return POLARITY_DARK; }*/
 
     /* 8.1 Deprecated Commands */
+
+"M00" { return PROGRAM_STOP; }
 
 "G54" { return SELECT_APERTURE; }
 "G70" { return SET_UNIT_INCH; }
@@ -130,11 +137,11 @@
 <INSIDE_TO>[_0-9a-zA-Z$][_a-zA-Z0-9]* { printf("[LEXER] USER_NAME: %s\n", yytext); return USER_NAME; }
 
 <INSIDE_AM>"," { printf("[LEXER] COMMA\n"); return COMMA; }
-<INSIDE_AM>"%" { printf("[LEXER] PERCENT\n"); return PERCENT; }
+<INSIDE_AM>"%" { printf("[LEXER] PERCENT\n"); BEGIN(INITIAL); return PERCENT; }
 <INSIDE_AM>['\*'] { printf("[LEXER] ASTERISK\n"); return ASTERISK; }
 <INSIDE_AM>"=" { printf("[LEXER] EQUALS\n"); return EQUALS; }
 <INSIDE_AM>"$" { printf("[LEXER] DOLLAR_SIGN\n"); return DOLLAR_SIGN; }
-<INSIDE_AM>[\._a-zA-Z$][\._a-zA-Z0-9]* { printf("[LEXER] NAME: %s\n", yytext); return NAME; }
+<INSIDE_AM>[\._a-zA-Z$][\._a-zA-Z0-9]* { printf("[LEXER Mode:AM] NAME: %s\n", yytext); return NAME; }
 <INSIDE_AM>"0" { printf("0: %s\n", yytext); BEGIN(INSIDE_AM_ZERO); return AM_ZERO; }
 <INSIDE_AM>"1" { printf("1: %s\n", yytext); BEGIN(INSIDE_AM_ONE); return AM_ONE; }
 <INSIDE_AM>"20" { printf("1: %s\n", yytext); BEGIN(INSIDE_AM_TWENTY); return AM_TWENTY; }

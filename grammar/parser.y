@@ -38,6 +38,7 @@ int yyerror(const char *p) { printf("yyerror() - Error! '%s' | Line: %d \n", p, 
 %token <string_val> APERTURE_IDENT APERTURE_IDENT_MOVE APERTURE_IDENT_SEGMENT APERTURE_IDENT_FLASH;
 %token <string_val> USER_NAME FIELD NAME STRING
 
+%token <sym> END_OF_FILE
 %token <sym> PERCENT ASTERISK ASTERISK_PERCENT
 %token <sym> DOT_PART DOT_FILEFUNCTION DOT_FILEPOLARITY DOT_SAMECOORDINATES DOT_CREATIONDATE DOT_GENERATIONSOFTWARE DOT_PROJECTID DOT_MD5
 %token <sym> DOT_APERFUNCTION DOT_DRILLTOLERANCE DOT_FLASHTEXT
@@ -51,14 +52,18 @@ int yyerror(const char *p) { printf("yyerror() - Error! '%s' | Line: %d \n", p, 
 %token <sym> ADD_SUB_OPERATOR MUL_DIV_OPERATOR
 
 /* Deprecated Commands */
-%token <sym> SELECT_APERTURE SET_COORD_FMT_ABSOLUTE SET_COORD_FMT_INCREMENTAL SET_UNIT_INCH SET_UNIT_MM
+%token <sym> SELECT_APERTURE SET_COORD_FMT_ABSOLUTE SET_COORD_FMT_INCREMENTAL SET_UNIT_INCH SET_UNIT_MM PROGRAM_STOP
 
 %token <sym> AM_ZERO AM_ONE AM_TWENTY
 
 %%
 
 start_symbol
-    : statements
+    : statements M02
+    ;
+
+M02
+    : END_OF_FILE '*' { std::cout << "[PARSER] M02 END_OF_FILE" << std::endl; }
     ;
 
 /*
@@ -78,8 +83,7 @@ statement
     ;
 
 single_statement
-    :
-    operation { std::cout << "operation" << std::endl; }
+    : operation { std::cout << "operation" << std::endl; }
     | interpolation_state_command { std::cout << "interpolation_state_command" << std::endl; }
     | Dnn { std::cout << "Dnn" << std::endl; }
     | G04
@@ -97,6 +101,7 @@ deprecated
     | SET_UNIT_MM APERTURE_IDENT_MOVE '*' { std::cout << "deprecated.SET_UNIT_MM(G71)" << std::endl; }
     | SET_COORD_FMT_ABSOLUTE '*' { std::cout << "deprecated.SET_COORD_FMT_ABSOLUTE(G90)" << std::endl; }
     | SET_COORD_FMT_INCREMENTAL '*' { std::cout << "deprecated.SET_COORD_FMT_INCREMENTAL(G91)" << std::endl; }
+    | PROGRAM_STOP '*' { std::cout << "deprecated.PROGRAM_STOP" << std::endl; }
     ;
 
 /* compound_statement
@@ -244,15 +249,15 @@ D03_X
     ;
 
 D03_X_Y
-    : X_C Y_C APERTURE_IDENT_FLASH '*'
+    : X_C Y_C APERTURE_IDENT_FLASH '*' { std::cout << "D03_X_Y" << std::endl; }
     ;
 
 X_C
-    : 'X' INTEGER_NUMBER
+    : 'X' INTEGER_NUMBER { std::cout << "X_C" << std::endl; }
     ;
 
 Y_C
-    : 'Y' INTEGER_NUMBER
+    : 'Y' INTEGER_NUMBER { std::cout << "Y_C" << std::endl; }
     ;
 
 /*
@@ -261,8 +266,12 @@ X_Y_PREFIX
     ;
 */
 
+/* G01 and deprecated combined syntax (spec page 190) */
 G01
     : INTERPOLATION_LINEAR '*' { std::cout << "INTERPOLATION_LINEAR" << std::endl; }
+    | INTERPOLATION_LINEAR D01_X_Y { std::cout << "DEPRECATED INTERPOLATION_LINEAR D01_X_Y" << std::endl; }
+    | INTERPOLATION_LINEAR D02_X_Y { std::cout << "DEPRECATED INTERPOLATION_LINEAR D02_X_Y" << std::endl; }
+    | INTERPOLATION_LINEAR D03_X_Y { std::cout << "DEPRECATED INTERPOLATION_LINEAR D03_X_Y" << std::endl; }
     ;
 
 G02
@@ -335,8 +344,8 @@ nxt_par
 //# Macro Definition
 //#-------------------
 
-AM :
-    AM_TOK macro_name macro_body PERCENT { std::cout << "[Parser] AM Rule" << std::endl; }
+AM
+    : AM_TOK macro_name macro_body PERCENT { std::cout << "[Parser] AM Rule" << std::endl; }
     ;
 
 macro_name
@@ -520,6 +529,7 @@ factor
     | UNSIGNED_DECIMAL_NUMBER
     ;
 */
+
 /* https://stackoverflow.com/questions/52807994/implementing-multiple-return-types-in-bison-semantic-rules */
 factor
     : macro_variable { std::cout << "[Parser] factor.macro_variable Rule" << std::endl; }
@@ -546,4 +556,5 @@ user_name =  /[_a-zA-Z$][._a-zA-Z0-9]* /; # Cannot start with a dot
 string    = /[^%*]* /; # All characters except * %
 field     = /[^%*,]* /; # All characters except * % ,
 */
+
 %%
