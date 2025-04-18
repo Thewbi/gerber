@@ -28,6 +28,8 @@ int yyerror(const char *p) { printf("yyerror() - Error! '%s' | Line: %d \n", p, 
     //node_t* expr_ptr;
 };
 
+%type<int_val> factor
+
 %token <int_val> COORDINATE_DIGITS;
 
 /* POSITIVE_INTEGER */
@@ -41,13 +43,17 @@ int yyerror(const char *p) { printf("yyerror() - Error! '%s' | Line: %d \n", p, 
 %token <sym> DOT_APERFUNCTION DOT_DRILLTOLERANCE DOT_FLASHTEXT
 %token <sym> DOT_N DOT_P DOT_C DOT_CROT DOT_CMFR DOT_CMPN DOT_CVAL DOT_CMNT DOT_CFTP DOT_CPGN DOT_CPGD DOT_CHGT DOT_CLBN DOT_CLBD DOT_CSUP
 %token <sym> G04_COMMENT COMMENT HASHTAG_COMMENT
-%token <sym> AD_TOK TF_TOK TA_TOK TO_TOK AM_TOK C
+%token <sym> AD_TOK TF_TOK TA_TOK TO_TOK AM_TOK C LP_TOK DARK CLEAR LM_TOK LR_TOK LS_TOK
 %token <sym> NEW_LINE
 %token <sym> DOT COLON COMMA OPENING_BRACKET CLOSING_BRACKET EQUALS DOLLAR_SIGN
 %token <sym> INTERPOLATION_LINEAR INTERPOLATION_CW_CIRCULAR INTERPOLATION_CCW_CIRCULAR INTERPOLATION_BEFORE_FIRST_CIRCULAR_COMPAT
+%token <sym> POLARITY_CLEAR POLARITY_DARK
 %token <sym> ADD_SUB_OPERATOR MUL_DIV_OPERATOR
 
-%token <sym> AM_ZERO AM_ONE
+/* Deprecated Commands */
+%token <sym> SELECT_APERTURE SET_COORD_FMT_ABSOLUTE SET_COORD_FMT_INCREMENTAL SET_UNIT_INCH SET_UNIT_MM
+
+%token <sym> AM_ZERO AM_ONE AM_TWENTY
 
 %%
 
@@ -81,7 +87,16 @@ single_statement
     | AD
     | AM
     | coordinate_command
-//    | transformation_state_command
+    | transformation_state_command
+    | deprecated
+    ;
+
+deprecated
+    : SELECT_APERTURE APERTURE_IDENT '*' { std::cout << "deprecated.SELECT_APERTURE(G54)" << std::endl; }
+    | SET_UNIT_INCH APERTURE_IDENT_MOVE '*' { std::cout << "deprecated.SET_UNIT_INCH(G70)" << std::endl; }
+    | SET_UNIT_MM APERTURE_IDENT_MOVE '*' { std::cout << "deprecated.SET_UNIT_MM(G71)" << std::endl; }
+    | SET_COORD_FMT_ABSOLUTE '*' { std::cout << "deprecated.SET_COORD_FMT_ABSOLUTE(G90)" << std::endl; }
+    | SET_COORD_FMT_INCREMENTAL '*' { std::cout << "deprecated.SET_COORD_FMT_INCREMENTAL(G91)" << std::endl; }
     ;
 
 /* compound_statement
@@ -108,14 +123,12 @@ interpolation_state_command
     | G75
     ;
 
-/*
 transformation_state_command
     : LP
     | LM
     | LR
     | LS
     ;
-*/
 
 attribute_command
     : TO
@@ -265,20 +278,36 @@ G75
     ;
 
 Dnn
-    : APERTURE_IDENT '*' { std::cout << "Dnn" << std::endl; };
+    : APERTURE_IDENT '*' { std::cout << "Dnn" << std::endl; }
+    ;
 
 G04
-    : G04_COMMENT { std::cout << "G04_COMMENT" << std::endl; };
+    : G04_COMMENT { std::cout << "G04_COMMENT" << std::endl; }
     ;
 
 /*
 M02 = ('M02') '*';
-
-LP = '%' ('LP' ('C'|'D')) '*%';
-LM = '%' ('LM' ('N'|'XY'|'Y'|'X')) '*%';
-LR = '%' ('LR' decimal) '*%';
-LS = '%' ('LS' decimal) '*%';
 */
+
+LP
+    : LP_TOK CLEAR ASTERISK_PERCENT { std::cout << "LP.CLEAR" << std::endl; }
+    | LP_TOK DARK ASTERISK_PERCENT { std::cout << "LP.DARK" << std::endl; }
+    ;
+
+LM
+    : LM_TOK 'N' ASTERISK_PERCENT
+    | LM_TOK 'X''Y' ASTERISK_PERCENT
+    | LM_TOK 'Y' ASTERISK_PERCENT
+    | LM_TOK 'X' ASTERISK_PERCENT
+    ;
+
+LR
+    : LR_TOK UNSIGNED_DECIMAL_NUMBER ASTERISK_PERCENT
+    ;
+
+LS
+    : LS_TOK UNSIGNED_DECIMAL_NUMBER ASTERISK_PERCENT
+    ;
 
 AD
     : AD_TOK APERTURE_IDENT template_call ASTERISK_PERCENT { std::cout << "[Parser] AD Rule" << std::endl; };
@@ -334,9 +363,9 @@ macro_variable
 
 primitive
     : AM_ZERO STRING ASTERISK { std::cout << "[Parser] primitive-0 Rule" << std::endl; }
-    | AM_ONE par par par par ASTERISK { std::cout << "[Parser] primitive-1 Rule" << std::endl; }
-    | '1' par par par par par ASTERISK
-    | '2''0' par par par par par par par ASTERISK
+    | AM_ONE par par par par ASTERISK { std::cout << "[Parser] primitive-1/1 Rule" << std::endl; }
+    | AM_ONE par par par par par ASTERISK { std::cout << "[Parser] primitive-1/2 Rule" << std::endl; }
+    | AM_TWENTY par { std::cout << "[Parser] PAR-1 value=" << $1 << std::endl; } par par par par par par ASTERISK { std::cout << "[Parser] primitive-20 Rule" << std::endl; }
     | '2''1' par par par par par par ASTERISK
     | '4' par par par par primitive_four_list par ASTERISK
     | '5' par par par par par par ASTERISK
@@ -475,8 +504,8 @@ expression
     ;
 
 add_sub_term_list
-    : add_sub_term_list ADD_SUB_OPERATOR term
-    | ADD_SUB_OPERATOR term
+    : term ADD_SUB_OPERATOR add_sub_term_list
+    | term
     ;
 
 term
@@ -491,9 +520,10 @@ factor
     | UNSIGNED_DECIMAL_NUMBER
     ;
 */
+/* https://stackoverflow.com/questions/52807994/implementing-multiple-return-types-in-bison-semantic-rules */
 factor
-    : macro_variable { std::cout << "[Parser] macro_variable Rule" << std::endl; }
-    | UNSIGNED_DECIMAL_NUMBER
+    : macro_variable { std::cout << "[Parser] factor.macro_variable Rule" << std::endl; }
+    | UNSIGNED_DECIMAL_NUMBER { std::cout << "[Parser] factor value=" << $1 << std::endl; $$ = $1; }
     ;
 
 /*
