@@ -7,6 +7,7 @@ Execute the command for the test files in the order below
 .\gerber.exe .\resources\test\AM_0.gbr
 .\gerber.exe .\resources\test\AM_1.gbr
 .\gerber.exe .\resources\test\AM_20.gbr
+.\gerber.exe .\resources\test\AM_21.gbr
 .\gerber.exe .\resources\test\AM.gbr
 .\gerber.exe .\resources\test\D01.gbr
 .\gerber.exe .\resources\test\D02.gbr

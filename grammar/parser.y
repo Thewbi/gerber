@@ -3,9 +3,9 @@
 %{
 
 #include <iostream>
+#include <iomanip>
 
 #include <stdio.h>
-//#include <cstring>
 #include <cstdint>
 
 #define YYDEBUG 1
@@ -23,6 +23,7 @@ int yyerror(const char *p) { printf("yyerror() - Error! '%s' | Line: %d \n", p, 
 
 %union {
     uint32_t int_val;
+    float float_val;
     char string_val[100];
     char sym;
     //node_t* expr_ptr;
@@ -33,7 +34,8 @@ int yyerror(const char *p) { printf("yyerror() - Error! '%s' | Line: %d \n", p, 
 %token <int_val> COORDINATE_DIGITS;
 
 /* POSITIVE_INTEGER */
-%token <int_val> INTEGER_NUMBER DECIMAL_NUMBER UNSIGNED_DECIMAL_NUMBER;
+%token <int_val> INTEGER_NUMBER DECIMAL_NUMBER
+%token <float_val> UNSIGNED_DECIMAL_NUMBER;
 
 %token <string_val> APERTURE_IDENT APERTURE_IDENT_MOVE APERTURE_IDENT_SEGMENT APERTURE_IDENT_FLASH;
 %token <string_val> USER_NAME FIELD NAME STRING
@@ -54,7 +56,7 @@ int yyerror(const char *p) { printf("yyerror() - Error! '%s' | Line: %d \n", p, 
 /* Deprecated Commands */
 %token <sym> SELECT_APERTURE SET_COORD_FMT_ABSOLUTE SET_COORD_FMT_INCREMENTAL SET_UNIT_INCH SET_UNIT_MM PROGRAM_STOP
 
-%token <sym> AM_ZERO AM_ONE AM_TWENTY
+%token <sym> AM_ZERO AM_ONE AM_TWENTY AM_TWENTY_ONE
 
 %%
 
@@ -375,7 +377,7 @@ primitive
     | AM_ONE par par par par ASTERISK { std::cout << "[Parser] primitive-1/1 Rule" << std::endl; }
     | AM_ONE par par par par par ASTERISK { std::cout << "[Parser] primitive-1/2 Rule" << std::endl; }
     | AM_TWENTY par { std::cout << "[Parser] PAR-1 value=" << $1 << std::endl; } par par par par par par ASTERISK { std::cout << "[Parser] primitive-20 Rule" << std::endl; }
-    | '2''1' par par par par par par ASTERISK
+    | AM_TWENTY_ONE par par par par par par ASTERISK
     | '4' par par par par primitive_four_list par ASTERISK
     | '5' par par par par par par ASTERISK
     | '7' par par par par par par ASTERISK
@@ -533,7 +535,7 @@ factor
 /* https://stackoverflow.com/questions/52807994/implementing-multiple-return-types-in-bison-semantic-rules */
 factor
     : macro_variable { std::cout << "[Parser] factor.macro_variable Rule" << std::endl; }
-    | UNSIGNED_DECIMAL_NUMBER { std::cout << "[Parser] factor value=" << $1 << std::endl; $$ = $1; }
+    | UNSIGNED_DECIMAL_NUMBER { std::cout << "[Parser] factor value=" << std::setprecision(10) << $1 << std::endl; $$ = $1; }
     ;
 
 /*
