@@ -17,6 +17,7 @@ Execute the command for the test files in the order below
 .\gerber.exe .\resources\test\G01_deprecated_syntax.gbr
 .\gerber.exe .\resources\test\G04_comment.gbr
 .\gerber.exe .\resources\test\GXY_Interpolation.gbr
+.\gerber.exe .\resources\test\G36_G37.gbr
 .\gerber.exe .\resources\test\LPD.gbr
 .\gerber.exe .\resources\test\MO.gbr
 .\gerber.exe .\resources\test\operations.gbr

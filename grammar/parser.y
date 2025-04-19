@@ -34,7 +34,7 @@ int yyerror(const char *p) { printf("yyerror() - Error! '%s' | Line: %d \n", p, 
 %token <int_val> COORDINATE_DIGITS;
 
 /* POSITIVE_INTEGER */
-%token <int_val> INTEGER_NUMBER DECIMAL_NUMBER
+%token <int_val> INTEGER_NUMBER SIGNED_INTEGER_NUMBER DECIMAL_NUMBER
 %token <float_val> UNSIGNED_DECIMAL_NUMBER;
 
 %token <string_val> APERTURE_IDENT APERTURE_IDENT_MOVE APERTURE_IDENT_SEGMENT APERTURE_IDENT_FLASH;
@@ -54,7 +54,7 @@ int yyerror(const char *p) { printf("yyerror() - Error! '%s' | Line: %d \n", p, 
 %token <sym> ADD_SUB_OPERATOR MUL_DIV_OPERATOR
 
 /* Deprecated Commands */
-%token <sym> SELECT_APERTURE SET_COORD_FMT_ABSOLUTE SET_COORD_FMT_INCREMENTAL SET_UNIT_INCH SET_UNIT_MM PROGRAM_STOP
+%token <sym> REGION_STATEMENT_START REGION_STATEMENT_END SELECT_APERTURE SET_COORD_FMT_ABSOLUTE SET_COORD_FMT_INCREMENTAL SET_UNIT_INCH SET_UNIT_MM PROGRAM_STOP
 
 %token <sym> AM_ZERO AM_ONE AM_TWENTY AM_TWENTY_ONE
 
@@ -81,20 +81,20 @@ statements
 
 statement
     : single_statement { std::cout << "single_statement" << std::endl; }
-//    | compound_statement
+    | compound_statement
     ;
 
 single_statement
-    : operation { std::cout << "operation" << std::endl; }
-    | interpolation_state_command { std::cout << "interpolation_state_command" << std::endl; }
-    | Dnn { std::cout << "Dnn" << std::endl; }
-    | G04
-    | attribute_command
-    | AD
-    | AM
-    | coordinate_command
-    | transformation_state_command
-    | deprecated
+    : operation { std::cout << "[PARSER] single_statement.operation" << std::endl; }
+    | interpolation_state_command { std::cout << "[PARSER] single_statement.interpolation_state_command" << std::endl; }
+    | Dnn { std::cout << "[PARSER] single_statement.Dnn" << std::endl; }
+    | G04 { std::cout << "[PARSER] single_statement.G04" << std::endl; }
+    | attribute_command { std::cout << "[PARSER] single_statement.attribute_command" << std::endl; }
+    | AD { std::cout << "[PARSER] single_statement.AD" << std::endl; }
+    | AM { std::cout << "[PARSER] single_statement.AM" << std::endl; }
+    | coordinate_command { std::cout << "[PARSER] single_statement.coordinate_command" << std::endl; }
+    | transformation_state_command { std::cout << "[PARSER] single_statement.transformation_state_command" << std::endl; }
+    | deprecated { std::cout << "[PARSER] single_statement.deprecated" << std::endl; }
     ;
 
 deprecated
@@ -106,21 +106,21 @@ deprecated
     | PROGRAM_STOP '*' { std::cout << "deprecated.PROGRAM_STOP" << std::endl; }
     ;
 
-/* compound_statement
+compound_statement
     : region_statement
-    | SR_statement
-    | AB_statement
-    ; */
+//    | SR_statement
+//    | AB_statement
+    ;
 
 coordinate_command
-    : FS
+    : FS { std::cout << "[PARSER] coordinate_command" << std::endl; }
     | MO
     ;
 
 operation
-    : D01 { std::cout << "operation.D01" << std::endl; }
-    | D02 { std::cout << "operation.D02" << std::endl; }
-    | D03 { std::cout << "operation.D03" << std::endl; }
+    : D01 { std::cout << "[PARSER] operation.D01" << std::endl; }
+    | D02 { std::cout << "[PARSER] operation.D02" << std::endl; }
+    | D03 { std::cout << "[PARSER] operation.D03" << std::endl; }
     ;
 
 interpolation_state_command
@@ -258,8 +258,14 @@ X_C
     : 'X' INTEGER_NUMBER { std::cout << "X_C" << std::endl; }
     ;
 
+/*
 Y_C
     : 'Y' INTEGER_NUMBER { std::cout << "Y_C" << std::endl; }
+    ;
+*/
+
+Y_C
+    : 'Y' SIGNED_INTEGER_NUMBER { std::cout << "Y_C" << std::endl; }
     ;
 
 /*
@@ -396,15 +402,43 @@ par
     : COMMA expression
     ;
 
-/*
+
 
 //# Compound statements
 
-region_statement = G36 {contour}+ G37;
-contour =          D02 {D01|interpolation_state_command}*;
-G36 = ('G36') '*';
-G37 = ('G37') '*';
+region_statement
+    : G36 contour_list G37 { std::cout << "[Parser] region_statement Rule" << std::endl; }
+    ;
 
+contour_list
+    : contour_list contour
+    | contour
+    ;
+
+contour
+    : D02 d01_list
+    | D02 interpolation_state_command_list
+    ;
+
+d01_list
+    : d01_list D01
+    | D01
+    ;
+
+interpolation_state_command_list
+    : interpolation_state_command_list interpolation_state_command
+    | interpolation_state_command
+    ;
+
+G36
+    : REGION_STATEMENT_START '*'
+    ;
+
+G37
+    : REGION_STATEMENT_END '*'
+    ;
+
+/*
 AB_statement = AB_open {in_block_statement}* AB_close;
 AB_open  =     '%' ('AB' aperture_ident) '*%';
 AB_close =     '%' ('AB') '*%';

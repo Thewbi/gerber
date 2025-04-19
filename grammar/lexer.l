@@ -63,6 +63,7 @@
 [1-6][3456] { yylval.int_val = atoi(yytext); return COORDINATE_DIGITS; }
 
 [0-9]+ { printf("[LEXER] INTEGER_NUMBER\n"); yylval.int_val = atoi(yytext); return INTEGER_NUMBER; }
+[+|-][0-9]+ { printf("[LEXER] SIGNED_INTEGER_NUMBER\n"); yylval.int_val = atoi(yytext); return SIGNED_INTEGER_NUMBER; }
 
 [+|-] { printf("[LEXER] ADD_SUB_OPERATOR\n"); return ADD_SUB_OPERATOR; }
 [x|\/] { printf("[LEXER] MUL_DIV_OPERATOR\n"); return MUL_DIV_OPERATOR; }
@@ -115,6 +116,8 @@
 
 "M00" { return PROGRAM_STOP; }
 
+"G36" { return REGION_STATEMENT_START; }
+"G37" { return REGION_STATEMENT_END; }
 "G54" { return SELECT_APERTURE; }
 "G70" { return SET_UNIT_INCH; }
 "G71" { return SET_UNIT_MM; }

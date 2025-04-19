@@ -3,4 +3,5 @@
 %ADD100C,1.5*%
 D100*
 X0Y0D03*            # D03 is the aperture flash operation
+
 M02*
