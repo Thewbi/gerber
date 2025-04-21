@@ -17,7 +17,7 @@
 %option warn nodefault
 %option debug
 
-%x INSIDE_TF INSIDE_TA INSIDE_TO INSIDE_AD INSIDE_AM INSIDE_AM_ZERO INSIDE_AM_ONE INSIDE_AM_TWENTY INSIDE_AM_TWENTY_ONE INSIDE_LP INSIDE_LM INSIDE_LR INSIDE_LS
+%x INSIDE_TF INSIDE_TA INSIDE_TO INSIDE_AD INSIDE_AM INSIDE_AM_ZERO INSIDE_AM_ONE INSIDE_AM_TWENTY INSIDE_AM_TWENTY_ONE INSIDE_LP INSIDE_LM INSIDE_LR INSIDE_LS INSIDE_SR
 
 %%
 
@@ -45,6 +45,9 @@
 "%LM" { printf("[LEXER] PERCENT LM_TOK\n"); BEGIN(INSIDE_LM); return LM_TOK; }
 "%LR" { printf("[LEXER] PERCENT LR_TOK\n"); BEGIN(INSIDE_LR); return LR_TOK; }
 "%LS" { printf("[LEXER] PERCENT LS_TOK\n"); BEGIN(INSIDE_LS); return LS_TOK; }
+
+"%SR" { printf("[LEXER] PERCENT SR_TOK\n"); BEGIN(INSIDE_SR); return SR_TOK; }
+"%SR*%" { printf("[LEXER] END_SR_TOK\n"); BEGIN(INITIAL); return END_SR_TOK; }
 
 <INSIDE_LP>"*%" { printf("[LEXER] ASTERISK_PERCENT\n"); BEGIN(INITIAL); return ASTERISK_PERCENT; }
 <INSIDE_LP>"D" { printf("[LEXER] D\n"); return DARK; }
@@ -179,8 +182,28 @@
 <INSIDE_AM_TWENTY_ONE>"," { printf("[LEXER] COMMA\n"); return COMMA; }
 <INSIDE_AM_TWENTY_ONE>[+|-] { printf("[LEXER] ADD_SUB_OPERATOR\n"); return ADD_SUB_OPERATOR; }
 <INSIDE_AM_TWENTY_ONE>[x|\/] { printf("[LEXER] MUL_DIV_OPERATOR\n"); return MUL_DIV_OPERATOR; }
-<INSIDE_AM_TWENTY_ONE>((([0-9]+)(\.[0-9]*)?)|(\.[0-9]+)) { yylval.float_val = atof(yytext); printf("[LEXER] UNSIGNED_DECIMAL_NUMBER - %s - %f\n", yytext, yylval.float_val);return UNSIGNED_DECIMAL_NUMBER; }
+<INSIDE_AM_TWENTY_ONE>((([0-9]+)(\.[0-9]*)?)|(\.[0-9]+)) { yylval.float_val = atof(yytext); printf("[LEXER] UNSIGNED_DECIMAL_NUMBER - %s - %f\n", yytext, yylval.float_val); return UNSIGNED_DECIMAL_NUMBER; }
 <INSIDE_AM_TWENTY_ONE>"$" { printf("[LEXER] DOLLAR_SIGN\n"); return DOLLAR_SIGN; }
+
+    /*
+    <INSIDE_SR>"%SR*%" { printf("[LEXER] END_SR_TOK\n"); BEGIN(INITIAL); return END_SR_TOK; }
+
+    <INSIDE_SR>['\*'] { printf("[LEXER] ASTERISK: \"%s\"\n", yytext); return ASTERISK; }
+    <INSIDE_SR>"//".* { printf("CommentText: %s\n", yytext); }
+    <INSIDE_SR>"," { printf("[LEXER] COMMA\n"); return COMMA; }
+    <INSIDE_SR>[+|-] { printf("[LEXER] ADD_SUB_OPERATOR\n"); return ADD_SUB_OPERATOR; }
+    <INSIDE_SR>[x|\/] { printf("[LEXER] MUL_DIV_OPERATOR\n"); return MUL_DIV_OPERATOR; }
+    <INSIDE_SR>((([0-9]+)(\.[0-9]*)?)|(\.[0-9]+)) { yylval.float_val = atof(yytext); printf("[LEXER] UNSIGNED_DECIMAL_NUMBER - %s - %f\n", yytext, yylval.float_val); return UNSIGNED_DECIMAL_NUMBER; }
+    */
+<INSIDE_SR>("X"[0-9]+) { printf("[LEXER] <INSIDE_SR> X INTEGER_NUMBER\n"); /*yylval.int_val = atoi(yytext);*/ return SR_X_INTEGER_NUMBER; }
+<INSIDE_SR>("Y"[0-9]+) { printf("[LEXER] <INSIDE_SR> Y INTEGER_NUMBER\n"); /*yylval.int_val = atoi(yytext);*/ return SR_Y_INTEGER_NUMBER; }
+<INSIDE_SR>("I"[0-9]+) { printf("[LEXER] <INSIDE_SR> I INTEGER_NUMBER\n"); /*yylval.int_val = atoi(yytext);*/ return SR_I_INTEGER_NUMBER; }
+<INSIDE_SR>("J"[0-9]+) { printf("[LEXER] <INSIDE_SR> J INTEGER_NUMBER\n"); /*yylval.int_val = atoi(yytext);*/ return SR_J_INTEGER_NUMBER; }
+<INSIDE_SR>("*%") { printf("[LEXER] <INSIDE_SR> ASTERISK PERCENT\n"); /*yylval.int_val = atoi(yytext);*/ BEGIN(INITIAL); return SR_ASTERISK_PERCENT; }
+    /*
+    <INSIDE_SR>"$" { printf("[LEXER] DOLLAR_SIGN\n"); return DOLLAR_SIGN; }
+    */
+
 
 (\r\n|\n) { }
 [ \t]+ { }

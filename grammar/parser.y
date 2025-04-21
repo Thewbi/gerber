@@ -46,7 +46,7 @@ int yyerror(const char *p) { printf("yyerror() - Error! '%s' | Line: %d \n", p, 
 %token <sym> DOT_APERFUNCTION DOT_DRILLTOLERANCE DOT_FLASHTEXT
 %token <sym> DOT_N DOT_P DOT_C DOT_CROT DOT_CMFR DOT_CMPN DOT_CVAL DOT_CMNT DOT_CFTP DOT_CPGN DOT_CPGD DOT_CHGT DOT_CLBN DOT_CLBD DOT_CSUP
 %token <sym> G04_COMMENT COMMENT HASHTAG_COMMENT
-%token <sym> AD_TOK TF_TOK TA_TOK TO_TOK AM_TOK C LP_TOK DARK CLEAR LM_TOK LR_TOK LS_TOK
+%token <sym> AD_TOK TF_TOK TA_TOK TO_TOK AM_TOK C LP_TOK DARK CLEAR LM_TOK LR_TOK LS_TOK SR_TOK END_SR_TOK
 %token <sym> NEW_LINE
 %token <sym> DOT COLON COMMA OPENING_BRACKET CLOSING_BRACKET EQUALS DOLLAR_SIGN
 %token <sym> INTERPOLATION_LINEAR INTERPOLATION_CW_CIRCULAR INTERPOLATION_CCW_CIRCULAR INTERPOLATION_BEFORE_FIRST_CIRCULAR_COMPAT
@@ -57,6 +57,8 @@ int yyerror(const char *p) { printf("yyerror() - Error! '%s' | Line: %d \n", p, 
 %token <sym> REGION_STATEMENT_START REGION_STATEMENT_END SELECT_APERTURE SET_COORD_FMT_ABSOLUTE SET_COORD_FMT_INCREMENTAL SET_UNIT_INCH SET_UNIT_MM PROGRAM_STOP
 
 %token <sym> AM_ZERO AM_ONE AM_TWENTY AM_TWENTY_ONE
+
+%token <sym> SR_X_INTEGER_NUMBER SR_Y_INTEGER_NUMBER SR_I_INTEGER_NUMBER SR_J_INTEGER_NUMBER SR_ASTERISK_PERCENT
 
 %%
 
@@ -108,7 +110,7 @@ deprecated
 
 compound_statement
     : region_statement
-//    | SR_statement
+    | SR_statement
 //    | AB_statement
     ;
 
@@ -213,9 +215,9 @@ D01
 */
 
 D02
-    : D02_X { std::cout << "D02_X" << std::endl; }
-    | D02_Y { std::cout << "D02_Y" << std::endl; }
-    | D02_X_Y { std::cout << "D02_X_Y" << std::endl; }
+    : D02_X { std::cout << "[PARSER] D02_X" << std::endl; }
+    | D02_Y { std::cout << "[PARSER] D02_Y" << std::endl; }
+    | D02_X_Y { std::cout << "[PARSER] D02_X_Y" << std::endl; }
     ;
 
 D02_Y
@@ -237,9 +239,9 @@ D03
     */
 
 D03
-    : D03_X { std::cout << "D03_X" << std::endl; }
-    | D03_Y { std::cout << "D03_Y" << std::endl; }
-    | D03_X_Y { std::cout << "D03_X_Y" << std::endl; }
+    : D03_X { std::cout << "[PARSER] D03_X rule" << std::endl; }
+    | D03_Y { std::cout << "[PARSER] D03_Y rule" << std::endl; }
+    | D03_X_Y { std::cout << "[PARSER] D03_X_Y rule" << std::endl; }
     ;
 
 D03_Y
@@ -251,11 +253,11 @@ D03_X
     ;
 
 D03_X_Y
-    : X_C Y_C APERTURE_IDENT_FLASH '*' { std::cout << "D03_X_Y" << std::endl; }
+    : X_C Y_C APERTURE_IDENT_FLASH '*' { std::cout << "[PARSER] D03_X_Y rule" << std::endl; }
     ;
 
 X_C
-    : 'X' INTEGER_NUMBER { std::cout << "X_C" << std::endl; }
+    : 'X' INTEGER_NUMBER { std::cout << "[PARSER] X_C rule" << std::endl; }
     ;
 
 /*
@@ -266,6 +268,7 @@ Y_C
 
 Y_C
     : 'Y' SIGNED_INTEGER_NUMBER { std::cout << "Y_C" << std::endl; }
+    | 'Y' INTEGER_NUMBER { std::cout << "Y_C" << std::endl; }
     ;
 
 /*
@@ -276,30 +279,30 @@ X_Y_PREFIX
 
 /* G01 and deprecated combined syntax (spec page 190) */
 G01
-    : INTERPOLATION_LINEAR '*' { std::cout << "INTERPOLATION_LINEAR" << std::endl; }
-    | INTERPOLATION_LINEAR D01_X_Y { std::cout << "DEPRECATED INTERPOLATION_LINEAR D01_X_Y" << std::endl; }
-    | INTERPOLATION_LINEAR D02_X_Y { std::cout << "DEPRECATED INTERPOLATION_LINEAR D02_X_Y" << std::endl; }
-    | INTERPOLATION_LINEAR D03_X_Y { std::cout << "DEPRECATED INTERPOLATION_LINEAR D03_X_Y" << std::endl; }
+    : INTERPOLATION_LINEAR '*' { std::cout << "[PARSER] INTERPOLATION_LINEAR Rule" << std::endl; }
+    | INTERPOLATION_LINEAR D01_X_Y { std::cout << "[PARSER] DEPRECATED INTERPOLATION_LINEAR D01_X_Y Rule" << std::endl; }
+    | INTERPOLATION_LINEAR D02_X_Y { std::cout << "[PARSER] DEPRECATED INTERPOLATION_LINEAR D02_X_Y Rule" << std::endl; }
+    | INTERPOLATION_LINEAR D03_X_Y { std::cout << "[PARSER] DEPRECATED INTERPOLATION_LINEAR D03_X_Y Rule" << std::endl; }
     ;
 
 G02
-    : INTERPOLATION_CW_CIRCULAR '*' { std::cout << "INTERPOLATION_CW_CIRCULAR" << std::endl; }
+    : INTERPOLATION_CW_CIRCULAR '*' { std::cout << "[PARSER] INTERPOLATION_CW_CIRCULAR Rule" << std::endl; }
     ;
 
 G03
-    : INTERPOLATION_CCW_CIRCULAR '*' { std::cout << "INTERPOLATION_CCW_CIRCULAR" << std::endl; }
+    : INTERPOLATION_CCW_CIRCULAR '*' { std::cout << "[PARSER] INTERPOLATION_CCW_CIRCULAR Rule" << std::endl; }
     ;
 
 G75
-    : INTERPOLATION_BEFORE_FIRST_CIRCULAR_COMPAT '*' { std::cout << "INTERPOLATION_BEFORE_FIRST_CIRCULAR_COMPAT" << std::endl; }
+    : INTERPOLATION_BEFORE_FIRST_CIRCULAR_COMPAT '*' { std::cout << "[PARSER] INTERPOLATION_BEFORE_FIRST_CIRCULAR_COMPAT Rule" << std::endl; }
     ;
 
 Dnn
-    : APERTURE_IDENT '*' { std::cout << "Dnn" << std::endl; }
+    : APERTURE_IDENT '*' { std::cout << "[PARSER] Dnn Rule" << std::endl; }
     ;
 
 G04
-    : G04_COMMENT { std::cout << "G04_COMMENT" << std::endl; }
+    : G04_COMMENT { std::cout << "[PARSER] G04_COMMENT Rule" << std::endl; }
     ;
 
 /*
@@ -307,8 +310,8 @@ M02 = ('M02') '*';
 */
 
 LP
-    : LP_TOK CLEAR ASTERISK_PERCENT { std::cout << "LP.CLEAR" << std::endl; }
-    | LP_TOK DARK ASTERISK_PERCENT { std::cout << "LP.DARK" << std::endl; }
+    : LP_TOK CLEAR ASTERISK_PERCENT { std::cout << "[PARSER] LP.CLEAR Rule" << std::endl; }
+    | LP_TOK DARK ASTERISK_PERCENT { std::cout << "[PARSER] LP.DARK Rule" << std::endl; }
     ;
 
 LM
@@ -442,18 +445,31 @@ G37
 AB_statement = AB_open {in_block_statement}* AB_close;
 AB_open  =     '%' ('AB' aperture_ident) '*%';
 AB_close =     '%' ('AB') '*%';
+*/
 
-SR_statement = SR_open {in_block_statement}* SR_close;
-SR_open =      '%' ('SR' 'X' positive_integer 'Y' positive_integer 'I' decimal 'J' decimal) '*%';
-SR_close =     '%' ('SR') '*%';
-
-in_block_statement =
-    |single_statement
-    |region_statement
-    |AB_statement
+SR_statement
+    : SR_open in_block_statement_list SR_close
     ;
 
-*/
+SR_open
+    : SR_TOK SR_X_INTEGER_NUMBER SR_Y_INTEGER_NUMBER SR_I_INTEGER_NUMBER SR_J_INTEGER_NUMBER SR_ASTERISK_PERCENT { std::cout << "[Parser] SR_open Rule" << std::endl; }
+    ;
+
+SR_close
+    : END_SR_TOK { std::cout << "[Parser] SR_close Rule" << std::endl; }
+    ;
+
+in_block_statement_list
+    : in_block_statement_list in_block_statement
+    | in_block_statement
+    ;
+
+in_block_statement
+    : single_statement
+    | region_statement
+//    | AB_statement
+    ;
+
 
 //# Attribute commands
 //#-------------------
