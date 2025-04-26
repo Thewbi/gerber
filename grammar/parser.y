@@ -46,7 +46,7 @@ int yyerror(const char *p) { printf("yyerror() - Error! '%s' | Line: %d \n", p, 
 %token <sym> DOT_APERFUNCTION DOT_DRILLTOLERANCE DOT_FLASHTEXT
 %token <sym> DOT_N DOT_P DOT_C DOT_CROT DOT_CMFR DOT_CMPN DOT_CVAL DOT_CMNT DOT_CFTP DOT_CPGN DOT_CPGD DOT_CHGT DOT_CLBN DOT_CLBD DOT_CSUP
 %token <sym> G04_COMMENT COMMENT HASHTAG_COMMENT
-%token <sym> AD_TOK TF_TOK TA_TOK TO_TOK AM_TOK C LP_TOK DARK CLEAR LM_TOK LR_TOK LS_TOK SR_TOK END_SR_TOK
+%token <sym> AB_TOK AD_TOK TF_TOK TA_TOK TO_TOK AM_TOK C LP_TOK DARK CLEAR LM_TOK LR_TOK LS_TOK SR_TOK END_SR_TOK
 %token <sym> NEW_LINE
 %token <sym> DOT COLON COMMA OPENING_BRACKET CLOSING_BRACKET EQUALS DOLLAR_SIGN
 %token <sym> INTERPOLATION_LINEAR INTERPOLATION_CW_CIRCULAR INTERPOLATION_CCW_CIRCULAR INTERPOLATION_BEFORE_FIRST_CIRCULAR_COMPAT
@@ -59,6 +59,8 @@ int yyerror(const char *p) { printf("yyerror() - Error! '%s' | Line: %d \n", p, 
 %token <sym> AM_ZERO AM_ONE AM_TWENTY AM_TWENTY_ONE
 
 %token <sym> SR_X_INTEGER_NUMBER SR_Y_INTEGER_NUMBER SR_I_INTEGER_NUMBER SR_J_INTEGER_NUMBER SR_ASTERISK_PERCENT
+
+%token <sym> AB_X_INTEGER_NUMBER AB_Y_INTEGER_NUMBER AB_I_INTEGER_NUMBER AB_J_INTEGER_NUMBER AB_ASTERISK_PERCENT
 
 %%
 
@@ -111,7 +113,7 @@ deprecated
 compound_statement
     : region_statement
     | SR_statement
-//    | AB_statement
+    | AB_statement
     ;
 
 coordinate_command
@@ -154,8 +156,8 @@ FS
     ;
 
 MO
-    : '%' 'M''O''M''M' '*''%' { std::cout << "MOMM" << std::endl; };
-    | '%' 'M''O''I''N' '*''%' { std::cout << "MOIN" << std::endl; };
+    : '%' 'M''O''M''M' '*''%' { std::cout << "[PARSER] MOMM" << std::endl; };
+    | '%' 'M''O''I''N' '*''%' { std::cout << "[PARSER] MOIN" << std::endl; };
     ;
 
 D01_X_I_J
@@ -195,13 +197,13 @@ J_C
     ;
 
 D01
-    : D01_X { std::cout << "D01_X" << std::endl; }
-    | D01_Y { std::cout << "D01_Y" << std::endl; }
-    | D01_X_Y { std::cout << "D01_X_Y" << std::endl; }
-    | D01_I_J { std::cout << "D01_I_J" << std::endl; }
-    | D01_X_I_J { std::cout << "D01_X_I_J" << std::endl; }
-    | D01_Y_I_J { std::cout << "D01_Y_I_J" << std::endl; }
-    | D01_X_Y_I_J { std::cout << "D01_X_Y_I_J" << std::endl; }
+    : D01_X { std::cout << "[PARSER] D01_X" << std::endl; }
+    | D01_Y { std::cout << "[PARSER] D01_Y" << std::endl; }
+    | D01_X_Y { std::cout << "[PARSER] D01_X_Y" << std::endl; }
+    | D01_I_J { std::cout << "[PARSER] D01_I_J" << std::endl; }
+    | D01_X_I_J { std::cout << "[PARSER] D01_X_I_J" << std::endl; }
+    | D01_Y_I_J { std::cout << "[PARSER] D01_Y_I_J" << std::endl; }
+    | D01_X_Y_I_J { std::cout << "[PARSER] D01_X_Y_I_J" << std::endl; }
     ;
 
 /*
@@ -267,8 +269,8 @@ Y_C
 */
 
 Y_C
-    : 'Y' SIGNED_INTEGER_NUMBER { std::cout << "Y_C" << std::endl; }
-    | 'Y' INTEGER_NUMBER { std::cout << "Y_C" << std::endl; }
+    : 'Y' SIGNED_INTEGER_NUMBER { /*std::cout << "Y_C" << std::endl;*/ }
+    | 'Y' INTEGER_NUMBER { /*std::cout << "Y_C" << std::endl;*/ }
     ;
 
 /*
@@ -441,11 +443,17 @@ G37
     : REGION_STATEMENT_END '*'
     ;
 
-/*
-AB_statement = AB_open {in_block_statement}* AB_close;
-AB_open  =     '%' ('AB' aperture_ident) '*%';
-AB_close =     '%' ('AB') '*%';
-*/
+AB_statement
+    : AB_open in_block_statement_list AB_close
+    ;
+
+AB_open
+    : AB_TOK APERTURE_IDENT AB_ASTERISK_PERCENT
+    ;
+
+AB_close
+    : AB_TOK AB_ASTERISK_PERCENT
+    ;
 
 SR_statement
     : SR_open in_block_statement_list SR_close
@@ -494,13 +502,13 @@ TF_atts
     : DOT_PART                  nxt_field { std::cout << "[PARSER] DOT_PART" << std::endl; }
     | DOT_FILEFUNCTION          nxt_fields { std::cout << "[PARSER] DOT_FILEFUNCTION" << std::endl; }
     | DOT_FILEPOLARITY          nxt_field { std::cout << "[PARSER] DOT_FILEPOLARITY" << std::endl; }
-    | DOT_SAMECOORDINATES                   { std::cout << "[PARSER] DOT_SAMECOORDINATES 0" << std::endl; }
-    | DOT_SAMECOORDINATES       nxt_field   { std::cout << "[PARSER] DOT_SAMECOORDINATES 1" << std::endl; }
-    | DOT_CREATIONDATE          nxt_field   { std::cout << "[PARSER] DOT_CREATIONDATE" << std::endl; }
+    | DOT_SAMECOORDINATES { std::cout << "[PARSER] DOT_SAMECOORDINATES 0" << std::endl; }
+    | DOT_SAMECOORDINATES       nxt_field { std::cout << "[PARSER] DOT_SAMECOORDINATES 1" << std::endl; }
+    | DOT_CREATIONDATE          nxt_field { std::cout << "[PARSER] DOT_CREATIONDATE" << std::endl; }
     | DOT_GENERATIONSOFTWARE    nxt_field nxt_field { std::cout << "[PARSER] DOT_GENERATIONSOFTWARE 2" << std::endl; }
     | DOT_GENERATIONSOFTWARE    nxt_field nxt_field nxt_field { std::cout << "[PARSER] DOT_GENERATIONSOFTWARE 3" << std::endl; }
-    | DOT_PROJECTID             nxt_field nxt_field nxt_field   { std::cout << "[PARSER] DOT_PROJECTID" << std::endl; }
-    | DOT_MD5                   nxt_field   { std::cout << "[PARSER] DOT_MD5" << std::endl; }
+    | DOT_PROJECTID             nxt_field nxt_field nxt_field { std::cout << "[PARSER] DOT_PROJECTID" << std::endl; }
+    | DOT_MD5                   nxt_field { std::cout << "[PARSER] DOT_MD5" << std::endl; }
     | USER_NAME { std::cout << "[PARSER] USER_NAME" << std::endl; }
     ;
 

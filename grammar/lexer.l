@@ -1,6 +1,10 @@
 /**
  * MODIFICATIONS:
  * - the type POSITIVE_INTEGER is not used. Instead a UNSIGNED_DECIMAL_NUMBER is lexed
+ *
+ * COMMENTS
+ * IF you want to add comments in the token section of this lexer file,
+ * do not forget to indent the start of the comment by a tab or whitespace!
  */
 
 %{
@@ -17,7 +21,7 @@
 %option warn nodefault
 %option debug
 
-%x INSIDE_TF INSIDE_TA INSIDE_TO INSIDE_AD INSIDE_AM INSIDE_AM_ZERO INSIDE_AM_ONE INSIDE_AM_TWENTY INSIDE_AM_TWENTY_ONE INSIDE_LP INSIDE_LM INSIDE_LR INSIDE_LS INSIDE_SR
+%x INSIDE_TF INSIDE_TA INSIDE_TO INSIDE_AD INSIDE_AM INSIDE_AM_ZERO INSIDE_AM_ONE INSIDE_AM_TWENTY INSIDE_AM_TWENTY_ONE INSIDE_LP INSIDE_LM INSIDE_LR INSIDE_LS INSIDE_SR INSIDE_AB
 
 %%
 
@@ -25,29 +29,28 @@
 
 "." { return DOT; }
 ":" { return COLON; }
-<INSIDE_TF>"," { printf("[LEXER] COMMA\n"); return COMMA; }
-<INSIDE_TA>"," { printf("[LEXER] COMMA\n"); return COMMA; }
-<INSIDE_TO>"," { printf("[LEXER] COMMA\n"); return COMMA; }
-<INSIDE_AD>"," { printf("[LEXER] COMMA\n"); return COMMA; }
+<INSIDE_TF>"," { printf("[LEXER] <INSIDE_TF> COMMA\n"); return COMMA; }
+<INSIDE_TA>"," { printf("[LEXER] <INSIDE_TA> COMMA\n"); return COMMA; }
+<INSIDE_TO>"," { printf("[LEXER] <INSIDE_TO> COMMA\n"); return COMMA; }
 
-<INSIDE_TF>"*%" { printf("[LEXER] ASTERISK_PERCENT\n"); BEGIN(INITIAL); return ASTERISK_PERCENT; }
-<INSIDE_TA>"*%" { printf("[LEXER] ASTERISK_PERCENT\n"); BEGIN(INITIAL); return ASTERISK_PERCENT; }
-<INSIDE_TO>"*%" { printf("[LEXER] ASTERISK_PERCENT\n"); BEGIN(INITIAL); return ASTERISK_PERCENT; }
-<INSIDE_AD>"*%" { printf("[LEXER] ASTERISK_PERCENT\n"); BEGIN(INITIAL); return ASTERISK_PERCENT; }
+<INSIDE_TF>"*%" { printf("[LEXER] <INSIDE_TF> ASTERISK_PERCENT\n"); BEGIN(INITIAL); return ASTERISK_PERCENT; }
+<INSIDE_TA>"*%" { printf("[LEXER] <INSIDE_TA> ASTERISK_PERCENT\n"); BEGIN(INITIAL); return ASTERISK_PERCENT; }
+<INSIDE_TO>"*%" { printf("[LEXER] <INSIDE_TO> ASTERISK_PERCENT\n"); BEGIN(INITIAL); return ASTERISK_PERCENT; }
 
-"%AM" { printf("[LEXER] PERCENT AM_TOK\n"); BEGIN(INSIDE_AM); return AM_TOK; }
-"%AD" { printf("[LEXER] PERCENT AD_TOK\n"); BEGIN(INSIDE_AD); return AD_TOK; }
-"%TF" { printf("[LEXER] PERCENT TF_TOK\n"); BEGIN(INSIDE_TF); return TF_TOK; }
-"%TA" { printf("[LEXER] PERCENT TA_TOK\n"); BEGIN(INSIDE_TA); return TA_TOK; }
-"%TO" { printf("[LEXER] PERCENT TO_TOK\n"); BEGIN(INSIDE_TO); return TO_TOK; }
+"%AB" { printf("[LEXER] <INITIAL> PERCENT AB_TOK\n"); BEGIN(INSIDE_AB); return AB_TOK; }
+"%AM" { printf("[LEXER] <INITIAL> PERCENT AM_TOK\n"); BEGIN(INSIDE_AM); return AM_TOK; }
+"%AD" { printf("[LEXER] <INITIAL> PERCENT AD_TOK\n"); BEGIN(INSIDE_AD); return AD_TOK; }
+"%TF" { printf("[LEXER] <INITIAL> PERCENT TF_TOK\n"); BEGIN(INSIDE_TF); return TF_TOK; }
+"%TA" { printf("[LEXER] <INITIAL> PERCENT TA_TOK\n"); BEGIN(INSIDE_TA); return TA_TOK; }
+"%TO" { printf("[LEXER] <INITIAL> PERCENT TO_TOK\n"); BEGIN(INSIDE_TO); return TO_TOK; }
 
-"%LP" { printf("[LEXER] PERCENT LP_TOK\n"); BEGIN(INSIDE_LP); return LP_TOK; }
-"%LM" { printf("[LEXER] PERCENT LM_TOK\n"); BEGIN(INSIDE_LM); return LM_TOK; }
-"%LR" { printf("[LEXER] PERCENT LR_TOK\n"); BEGIN(INSIDE_LR); return LR_TOK; }
-"%LS" { printf("[LEXER] PERCENT LS_TOK\n"); BEGIN(INSIDE_LS); return LS_TOK; }
+"%LP" { printf("[LEXER] <INITIAL> PERCENT LP_TOK\n"); BEGIN(INSIDE_LP); return LP_TOK; }
+"%LM" { printf("[LEXER] <INITIAL> PERCENT LM_TOK\n"); BEGIN(INSIDE_LM); return LM_TOK; }
+"%LR" { printf("[LEXER] <INITIAL> PERCENT LR_TOK\n"); BEGIN(INSIDE_LR); return LR_TOK; }
+"%LS" { printf("[LEXER] <INITIAL> PERCENT LS_TOK\n"); BEGIN(INSIDE_LS); return LS_TOK; }
 
-"%SR" { printf("[LEXER] PERCENT SR_TOK\n"); BEGIN(INSIDE_SR); return SR_TOK; }
-"%SR*%" { printf("[LEXER] END_SR_TOK\n"); BEGIN(INITIAL); return END_SR_TOK; }
+"%SR" { printf("[LEXER] <INITIAL> PERCENT SR_TOK\n"); BEGIN(INSIDE_SR); return SR_TOK; }
+"%SR*%" { printf("[LEXER] <INITIAL> END_SR_TOK\n"); BEGIN(INITIAL); return END_SR_TOK; }
 
 <INSIDE_LP>"*%" { printf("[LEXER] ASTERISK_PERCENT\n"); BEGIN(INITIAL); return ASTERISK_PERCENT; }
 <INSIDE_LP>"D" { printf("[LEXER] D\n"); return DARK; }
@@ -57,8 +60,6 @@
 <INSIDE_LR>((([0-9]+)(\.[0-9]*)?)|(\.[0-9]+)) { printf("[LEXER] UNSIGNED_DECIMAL_NUMBER\n"); yylval.float_val = atof(yytext); return UNSIGNED_DECIMAL_NUMBER; }
 <INSIDE_LS>"*%" { printf("[LEXER] ASTERISK_PERCENT\n"); BEGIN(INITIAL); return ASTERISK_PERCENT; }
 <INSIDE_LS>((([0-9]+)(\.[0-9]*)?)|(\.[0-9]+)) { yylval.float_val = atof(yytext); printf("[LEXER] UNSIGNED_DECIMAL_NUMBER%d\n", yylval.float_val); return UNSIGNED_DECIMAL_NUMBER; }
-
-<INSIDE_AD>"C" { printf("[LEXER] C\n"); return C; }
 
     /*
     [1-6][56] { yylval.int_val = atoi(yytext); return COORDINATE_DIGITS; }
@@ -71,7 +72,11 @@
 [+|-] { printf("[LEXER] ADD_SUB_OPERATOR\n"); return ADD_SUB_OPERATOR; }
 [x|\/] { printf("[LEXER] MUL_DIV_OPERATOR\n"); return MUL_DIV_OPERATOR; }
 
+<INSIDE_AD>"," { printf("[LEXER] COMMA\n"); return COMMA; }
+<INSIDE_AD>"*%" { printf("[LEXER] ASTERISK_PERCENT\n"); BEGIN(INITIAL); return ASTERISK_PERCENT; }
+<INSIDE_AD>"C" { printf("[LEXER] C\n"); return C; }
 <INSIDE_AD>[+|-]?((([0-9]+)(\.[0-9]*)?)|(\.[0-9]+)) { /*printf("DECIMAL_NUMBER\n");*/ yylval.int_val = atoi(yytext); return DECIMAL_NUMBER; }
+<INSIDE_AD>"D"[0-9][0-9]+ { yylval.int_val = atoi(yytext); printf("[LEXER] [INSIDE_AD] APERTURE_IDENT: %s\n", yytext); return APERTURE_IDENT; }
 
 ((([0-9]+)(\.[0-9]*)?)|(\.[0-9]+)) { printf("[LEXER] UNSIGNED_DECIMAL_NUMBER\n"); yylval.int_val = atoi(yytext); return UNSIGNED_DECIMAL_NUMBER; }
 
@@ -131,8 +136,7 @@
 "D02" { /*printf("APERTURE_IDENT\n"); yylval.int_val = atoi(yytext);*/ return APERTURE_IDENT_MOVE; }
 "D03" { /*printf("APERTURE_IDENT\n"); yylval.int_val = atoi(yytext);*/ return APERTURE_IDENT_FLASH; }
 
-"D"[0-9][0-9]+ { yylval.int_val = atoi(yytext); printf("[APERTURE_IDENT] APERTURE_IDENT: %s\n", yytext); return APERTURE_IDENT; }
-<INSIDE_AD>"D"[0-9][0-9]+ { yylval.int_val = atoi(yytext); printf("[APERTURE_IDENT] APERTURE_IDENT: %s\n", yytext); return APERTURE_IDENT; }
+"D"[0-9][0-9]+ { yylval.int_val = atoi(yytext); printf("[LEXER] APERTURE_IDENT: %s\n", yytext); return APERTURE_IDENT; }
 
 <INSIDE_TF>[^%'\*',]+ { printf("[LEXER] FIELD: %s\n", yytext); return FIELD; }
 <INSIDE_TA>[^%'\*',]+ { printf("[LEXER] FIELD: %s\n", yytext); return FIELD; }
@@ -204,6 +208,12 @@
     <INSIDE_SR>"$" { printf("[LEXER] DOLLAR_SIGN\n"); return DOLLAR_SIGN; }
     */
 
+<INSIDE_AB>("X"[0-9]+) { printf("[LEXER] <INSIDE_AB> X INTEGER_NUMBER\n"); /*yylval.int_val = atoi(yytext);*/ return AB_X_INTEGER_NUMBER; }
+<INSIDE_AB>("Y"[0-9]+) { printf("[LEXER] <INSIDE_AB> Y INTEGER_NUMBER\n"); /*yylval.int_val = atoi(yytext);*/ return AB_Y_INTEGER_NUMBER; }
+<INSIDE_AB>("I"[0-9]+) { printf("[LEXER] <INSIDE_AB> I INTEGER_NUMBER\n"); /*yylval.int_val = atoi(yytext);*/ return AB_I_INTEGER_NUMBER; }
+<INSIDE_AB>("J"[0-9]+) { printf("[LEXER] <INSIDE_AB> J INTEGER_NUMBER\n"); /*yylval.int_val = atoi(yytext);*/ return AB_J_INTEGER_NUMBER; }
+<INSIDE_AB>("*%") { printf("[LEXER] <INSIDE_AB> ASTERISK PERCENT\n"); /*yylval.int_val = atoi(yytext);*/ BEGIN(INITIAL); return AB_ASTERISK_PERCENT; }
+<INSIDE_AB>"D"[0-9][0-9]+ { yylval.int_val = atoi(yytext); printf("[LEXER] <INSIDE_AB> APERTURE_IDENT: %s\n", yytext); return APERTURE_IDENT; }
 
 (\r\n|\n) { }
 [ \t]+ { }
