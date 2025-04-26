@@ -34,10 +34,10 @@ int yyerror(const char *p) { printf("yyerror() - Error! '%s' | Line: %d \n", p, 
 %token <int_val> COORDINATE_DIGITS;
 
 /* POSITIVE_INTEGER */
-%token <int_val> INTEGER_NUMBER SIGNED_INTEGER_NUMBER DECIMAL_NUMBER
-%token <float_val> UNSIGNED_DECIMAL_NUMBER;
+%token <int_val> INTEGER_NUMBER SIGNED_INTEGER_NUMBER
+%token <float_val> UNSIGNED_DECIMAL_NUMBER DECIMAL_NUMBER
 
-%token <string_val> APERTURE_IDENT APERTURE_IDENT_MOVE APERTURE_IDENT_SEGMENT APERTURE_IDENT_FLASH;
+%token <string_val> APERTURE_IDENT APERTURE_IDENT_MOVE APERTURE_IDENT_SEGMENT APERTURE_IDENT_FLASH
 %token <string_val> USER_NAME FIELD NAME STRING
 
 %token <sym> END_OF_FILE
@@ -46,7 +46,7 @@ int yyerror(const char *p) { printf("yyerror() - Error! '%s' | Line: %d \n", p, 
 %token <sym> DOT_APERFUNCTION DOT_DRILLTOLERANCE DOT_FLASHTEXT
 %token <sym> DOT_N DOT_P DOT_C DOT_CROT DOT_CMFR DOT_CMPN DOT_CVAL DOT_CMNT DOT_CFTP DOT_CPGN DOT_CPGD DOT_CHGT DOT_CLBN DOT_CLBD DOT_CSUP
 %token <sym> G04_COMMENT COMMENT HASHTAG_COMMENT
-%token <sym> AB_TOK AD_TOK TF_TOK TA_TOK TO_TOK AM_TOK C LP_TOK DARK CLEAR LM_TOK LR_TOK LS_TOK SR_TOK END_SR_TOK
+%token <sym> AB_TOK AD_TOK AD_NAME AD_X TF_TOK TA_TOK TO_TOK TD_TOK AM_TOK C LP_TOK DARK CLEAR LM_TOK LR_TOK LS_TOK SR_TOK END_SR_TOK
 %token <sym> NEW_LINE
 %token <sym> DOT COLON COMMA OPENING_BRACKET CLOSING_BRACKET EQUALS DOLLAR_SIGN
 %token <sym> INTERPOLATION_LINEAR INTERPOLATION_CW_CIRCULAR INTERPOLATION_CCW_CIRCULAR INTERPOLATION_BEFORE_FIRST_CIRCULAR_COMPAT
@@ -56,7 +56,7 @@ int yyerror(const char *p) { printf("yyerror() - Error! '%s' | Line: %d \n", p, 
 /* Deprecated Commands */
 %token <sym> REGION_STATEMENT_START REGION_STATEMENT_END SELECT_APERTURE SET_COORD_FMT_ABSOLUTE SET_COORD_FMT_INCREMENTAL SET_UNIT_INCH SET_UNIT_MM PROGRAM_STOP
 
-%token <sym> AM_ZERO AM_ONE AM_TWENTY AM_TWENTY_ONE
+%token <sym> AM_ZERO AM_ONE AM_TWENTY AM_TWENTY_ONE AM_FOUR
 
 %token <sym> SR_X_INTEGER_NUMBER SR_Y_INTEGER_NUMBER SR_I_INTEGER_NUMBER SR_J_INTEGER_NUMBER SR_ASTERISK_PERCENT
 
@@ -326,22 +326,41 @@ LS
 
 AD
     : AD_TOK APERTURE_IDENT template_call ASTERISK_PERCENT { std::cout << "[Parser] AD Rule" << std::endl; };
+    | AD_TOK APERTURE_IDENT aperture_shape ASTERISK_PERCENT { std::cout << "[Parser] AD Rule" << std::endl; };
     ;
 
-//#aperture_shape = name [',' decimal {'X' decimal}*];
+aperture_shape
+    : AD_NAME COMMA decimal_pair_list
+    ;
+
+decimal_pair_list
+    : decimal_pair AD_X decimal_pair_list
+    | decimal_pair
+    ;
+
+decimal_pair
+    :  DECIMAL_NUMBER { std::cout << "[Parser] AD.decimal_pair Rule = decimal " << $1 << std::endl; };
+    ;
 
 template_call
-   : C fst_par { std::cout << "[Parser] template_call Rule" << std::endl; };
-   //| 'C' fst_par nxt_par
-   //| 'R' fst_par nxt_par [nxt_par]
-   //| 'O' fst_par nxt_par [nxt_par]
-   //| 'P' fst_par nxt_par [nxt_par [nxt_par]]
-   //| !(('C'|'R'|'O'|'P')(','|'*')) name [fst_par {nxt_par}*]
-   ;
+    : C fst_par { std::cout << "[Parser] template_call Rule" << std::endl; }
+    //| 'C' fst_par nxt_par
+    //| 'R' fst_par nxt_par [nxt_par]
+    //| 'O' fst_par nxt_par [nxt_par]
+    //| 'P' fst_par nxt_par [nxt_par [nxt_par]]
+    //| !(('C'|'R'|'O'|'P')(','|'*')) name [fst_par {nxt_par}*]
+    ;
 
 fst_par
     : COMMA DECIMAL_NUMBER
     ;
+
+    /*
+    nxt_par_list
+        : nxt_par nxt_par_list
+        | nxt_par
+        ;
+    */
 
 nxt_par
     : 'X' DECIMAL_NUMBER
@@ -382,7 +401,7 @@ primitive
     | AM_ONE par par par par par ASTERISK { std::cout << "[Parser] primitive-1/2 Rule" << std::endl; }
     | AM_TWENTY par { std::cout << "[Parser] PAR-1 value=" << $1 << std::endl; } par par par par par par ASTERISK { std::cout << "[Parser] primitive-20 Rule" << std::endl; }
     | AM_TWENTY_ONE par par par par par par ASTERISK
-    | '4' par par par par primitive_four_list par ASTERISK
+    | AM_FOUR par par par par primitive_four_list par ASTERISK
     | '5' par par par par par par ASTERISK
     | '7' par par par par par par ASTERISK
     ;
@@ -485,7 +504,8 @@ TO
     ;
 
 TD
-    : '%' 'T''D' all_atts '*''%'
+    : TD_TOK ASTERISK_PERCENT
+    | TD_TOK all_atts ASTERISK_PERCENT
     ;
 
 TF_atts
