@@ -304,10 +304,6 @@ G04
     : G04_COMMENT { std::cout << "[PARSER] G04_COMMENT Rule" << std::endl; }
     ;
 
-/*
-M02 = ('M02') '*';
-*/
-
 LP
     : LP_TOK CLEAR ASTERISK_PERCENT { std::cout << "[PARSER] LP.CLEAR Rule" << std::endl; }
     | LP_TOK DARK ASTERISK_PERCENT { std::cout << "[PARSER] LP.DARK Rule" << std::endl; }
@@ -404,8 +400,6 @@ par
     : COMMA expression
     ;
 
-
-
 //# Compound statements
 
 region_statement
@@ -445,7 +439,7 @@ AB_statement
     ;
 
 AB_open
-    : AB_TOK APERTURE_IDENT AB_ASTERISK_PERCENT
+    : AB_TOK APERTURE_IDENT AB_ASTERISK_PERCENT { std::cout << "[Parser] AB_open Rule, aperture_ident = " << $2 << std::endl; }
     ;
 
 AB_close
@@ -472,9 +466,8 @@ in_block_statement_list
 in_block_statement
     : single_statement
     | region_statement
-//    | AB_statement
+    | AB_statement
     ;
-
 
 //# Attribute commands
 //#-------------------

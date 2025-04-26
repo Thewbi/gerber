@@ -1,7 +1,3 @@
-# Note
-
-This file has been copied into README.md in the root folder.
-
 # Example files
 
 https://www.ucamco.com/en/gerber/downloads

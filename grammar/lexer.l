@@ -11,6 +11,7 @@
 
 #include <stdio.h>
 #include <cstdint>
+#include <cstring>
 
 #include "parser.h"
 
@@ -213,7 +214,7 @@
 <INSIDE_AB>("I"[0-9]+) { printf("[LEXER] <INSIDE_AB> I INTEGER_NUMBER\n"); /*yylval.int_val = atoi(yytext);*/ return AB_I_INTEGER_NUMBER; }
 <INSIDE_AB>("J"[0-9]+) { printf("[LEXER] <INSIDE_AB> J INTEGER_NUMBER\n"); /*yylval.int_val = atoi(yytext);*/ return AB_J_INTEGER_NUMBER; }
 <INSIDE_AB>("*%") { printf("[LEXER] <INSIDE_AB> ASTERISK PERCENT\n"); /*yylval.int_val = atoi(yytext);*/ BEGIN(INITIAL); return AB_ASTERISK_PERCENT; }
-<INSIDE_AB>"D"[0-9][0-9]+ { yylval.int_val = atoi(yytext); printf("[LEXER] <INSIDE_AB> APERTURE_IDENT: %s\n", yytext); return APERTURE_IDENT; }
+<INSIDE_AB>"D"[0-9][0-9]+ { /*yylval.int_val = atoi(yytext);*/ std::memcpy(yylval.string_val, yytext, std::strlen(yytext)); printf("[LEXER] <INSIDE_AB> APERTURE_IDENT: %s\n", yytext); return APERTURE_IDENT; }
 
 (\r\n|\n) { }
 [ \t]+ { }
