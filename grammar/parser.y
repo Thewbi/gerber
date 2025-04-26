@@ -72,12 +72,6 @@ M02
     : END_OF_FILE '*' { std::cout << "[PARSER] M02 END_OF_FILE" << std::endl; }
     ;
 
-/*
-comment
-    : HASHTAG_COMMENT
-    ;
-*/
-
 statements
     : statement
     | statements statement
@@ -189,11 +183,13 @@ D01_I_J
     ;
 
 I_C
-    : 'I' INTEGER_NUMBER
+    : 'I' SIGNED_INTEGER_NUMBER
+    | 'I' INTEGER_NUMBER
     ;
 
 J_C
-    : 'J' INTEGER_NUMBER
+    : 'J' SIGNED_INTEGER_NUMBER
+    | 'J' INTEGER_NUMBER
     ;
 
 D01
@@ -259,7 +255,8 @@ D03_X_Y
     ;
 
 X_C
-    : 'X' INTEGER_NUMBER { std::cout << "[PARSER] X_C rule" << std::endl; }
+    : 'X' SIGNED_INTEGER_NUMBER { std::cout << "[PARSER] X_C rule" << std::endl; }
+    | 'X' INTEGER_NUMBER { std::cout << "[PARSER] X_C rule" << std::endl; }
     ;
 
 /*
