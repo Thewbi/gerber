@@ -56,7 +56,7 @@ int yyerror(const char *p) { printf("yyerror() - Error! '%s' | Line: %d \n", p, 
 /* Deprecated Commands */
 %token <sym> REGION_STATEMENT_START REGION_STATEMENT_END SELECT_APERTURE SET_COORD_FMT_ABSOLUTE SET_COORD_FMT_INCREMENTAL SET_UNIT_INCH SET_UNIT_MM PROGRAM_STOP IMAGE_POLARITY IMAGE_NAME
 
-%token <sym> AM_ZERO AM_ONE AM_TWENTY AM_TWENTY_ONE AM_FOUR
+%token <sym> AM_ZERO AM_ONE AM_TWENTY AM_TWENTY_ONE AM_FOUR AM_FIVE AM_SEVEN
 
 %token <sym> SR_X_INTEGER_NUMBER SR_Y_INTEGER_NUMBER SR_I_INTEGER_NUMBER SR_J_INTEGER_NUMBER SR_ASTERISK_PERCENT
 
@@ -376,14 +376,20 @@ nxt_par
 //# Macro Definition
 //#-------------------
 
+// AM for Aperture Macro (Spec. Page 55)
 AM
     : AM_TOK macro_name macro_body PERCENT { std::cout << "[Parser] AM Rule" << std::endl; }
     ;
 
+// Name of the aperture macro. The name must be unique, it
+// cannot be reused for another macro. See 3.4.5 for the syntax
+// rules.
 macro_name
     : NAME ASTERISK { std::cout << "[Parser] macro_name Rule" << std::endl; }
     ;
 
+// The macro body contains the primitives generating the image
+// and the calculation of their parameters.
 macro_body
     : in_macro_block
     | macro_body in_macro_block
@@ -394,6 +400,9 @@ in_macro_block
     | variable_definition
     ;
 
+// $n=<Arithmetic expression>. An arithmetic expression may
+// use arithmetic operators (described later), constants and
+// variables $m defined previously.
 variable_definition
     : macro_variable EQUALS expression ASTERISK
     ;
@@ -402,15 +411,20 @@ macro_variable
     : DOLLAR_SIGN UNSIGNED_DECIMAL_NUMBER
     ;
 
+// A primitive is a basic shape to create the macro. It includes
+// primitive code identifying the primitive and primitive-specific
+// parameters (e.g. center of a circle). See 4.5.1. The primitives
+// are positioned in a coordinates system whose origin is the
+// origin of the resulting apertures.
 primitive
     : AM_ZERO STRING ASTERISK { std::cout << "[Parser] primitive-0 Rule" << std::endl; }
     | AM_ONE par par par par ASTERISK { std::cout << "[Parser] primitive-1/1 Rule" << std::endl; }
     | AM_ONE par par par par par ASTERISK { std::cout << "[Parser] primitive-1/2 Rule" << std::endl; }
     | AM_TWENTY par { std::cout << "[Parser] PAR-1 value=" << $1 << std::endl; } par par par par par par ASTERISK { std::cout << "[Parser] primitive-20 Rule" << std::endl; }
-    | AM_TWENTY_ONE par par par par par par ASTERISK
-    | AM_FOUR par par par par primitive_four_list par ASTERISK
-    | '5' par par par par par par ASTERISK
-    | '7' par par par par par par ASTERISK
+    | AM_TWENTY_ONE par par par par par par ASTERISK { std::cout << "[Parser] primitive-21 Rule" << std::endl; }
+    | AM_FOUR par par par par primitive_four_list par ASTERISK { std::cout << "[Parser] primitive-4 Rule" << std::endl; }
+    | AM_FIVE par par par par par par ASTERISK { std::cout << "[Parser] primitive-5 Rule" << std::endl; }
+    | AM_SEVEN par par par par par par ASTERISK { std::cout << "[Parser] primitive-7 Rule" << std::endl; }
     ;
 
 primitive_four_list
@@ -424,6 +438,19 @@ primitive_four
 
 par
     : COMMA expression
+    ;
+
+// A code specifying the primitive (e.g. polygon).
+//primitive_code
+//    :
+//    ;
+
+// Parameter can be a decimal number (e.g. 0.050), a variable
+// (e.g. $1) or an arithmetic expression based on numbers and
+// variables. The actual value is calculated as explained in
+// 4.5.4.3.
+parameter
+    :
     ;
 
 //# Compound statements
@@ -611,6 +638,7 @@ factor
 factor
     : macro_variable { std::cout << "[Parser] factor.macro_variable Rule" << std::endl; }
     | UNSIGNED_DECIMAL_NUMBER { std::cout << "[Parser] factor value=" << std::setprecision(10) << $1 << std::endl; $$ = $1; }
+    | DECIMAL_NUMBER { std::cout << "[Parser] factor value=" << std::setprecision(10) << $1 << std::endl; $$ = $1; }
     ;
 
 /*
