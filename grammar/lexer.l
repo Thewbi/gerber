@@ -132,6 +132,8 @@
     /* 8.1 Deprecated Commands */
 
 "M00" { return PROGRAM_STOP; }
+"IP" { return IMAGE_POLARITY; }
+"IN"[^"*"]* { return IMAGE_NAME; }
 
 "G36" { return REGION_STATEMENT_START; }
 "G37" { return REGION_STATEMENT_END; }

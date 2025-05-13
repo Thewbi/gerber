@@ -9,6 +9,25 @@ https://github.com/sousarbarb/V7DParser/tree/main/gbr
 
 https://www.ucamco.com/files/downloads/file_en/456/gerber-layer-format-specification-revision-2024-05_en.pdf?94b45d8745c1a068fd091f095a26ddeb
 
+# Links
+
+https://www.artwork.com/gerber/appl2.htm
+
+# Development
+
+First, build the software using the make tool by typing make in this folder.
+
+```
+make
+```
+
+Once the executable is ready, feed it an example file.
+
+```
+.\gerber.exe resources\test\GoodFET\07a16ddef66d616a58a6e7265e810823.GTP
+```
+
+There should be no syntax error.
 
 
 # Tools

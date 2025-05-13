@@ -54,7 +54,7 @@ int yyerror(const char *p) { printf("yyerror() - Error! '%s' | Line: %d \n", p, 
 %token <sym> ADD_SUB_OPERATOR MUL_DIV_OPERATOR
 
 /* Deprecated Commands */
-%token <sym> REGION_STATEMENT_START REGION_STATEMENT_END SELECT_APERTURE SET_COORD_FMT_ABSOLUTE SET_COORD_FMT_INCREMENTAL SET_UNIT_INCH SET_UNIT_MM PROGRAM_STOP
+%token <sym> REGION_STATEMENT_START REGION_STATEMENT_END SELECT_APERTURE SET_COORD_FMT_ABSOLUTE SET_COORD_FMT_INCREMENTAL SET_UNIT_INCH SET_UNIT_MM PROGRAM_STOP IMAGE_POLARITY IMAGE_NAME
 
 %token <sym> AM_ZERO AM_ONE AM_TWENTY AM_TWENTY_ONE AM_FOUR
 
@@ -102,6 +102,13 @@ deprecated
     | SET_COORD_FMT_ABSOLUTE '*' { std::cout << "deprecated.SET_COORD_FMT_ABSOLUTE(G90)" << std::endl; }
     | SET_COORD_FMT_INCREMENTAL '*' { std::cout << "deprecated.SET_COORD_FMT_INCREMENTAL(G91)" << std::endl; }
     | PROGRAM_STOP '*' { std::cout << "deprecated.PROGRAM_STOP" << std::endl; }
+    | '%' IMAGE_POLARITY pos_neg '*''%' { std::cout << "deprecated.IMAGE_POLARITY" << std::endl; }
+    | '%' IMAGE_NAME '*''%' { std::cout << "deprecated.IMAGE_NAME" << std::endl; }
+    ;
+
+pos_neg
+    : 'P''O''S'
+    | 'N''E''G'
     ;
 
 compound_statement
