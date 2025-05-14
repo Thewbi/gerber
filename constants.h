@@ -1,0 +1,6 @@
+#ifndef __GERBER_CONSTANTS
+#define __GERBER_CONSTANTS
+
+#define STRING_BUFFER_LENGTH 100
+
+#endif

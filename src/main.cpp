@@ -3,6 +3,7 @@
 
 #include <windows.h>
 
+#include "constants.h"
 #include "parser.h"
 
 extern FILE* yyin;
