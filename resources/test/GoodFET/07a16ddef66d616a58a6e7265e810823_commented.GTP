@@ -73,14 +73,14 @@ G01*
 //
 //// Select aperture D10 as current aperture
 //D10*
-//// D03 - Create flash with the current aperture at (297425, 165100) mm
-//X297425Y165100D03*
-//// D03 - Create flash with the current aperture at ...
-//X280425Y165100D03*
-//// D03 - Create flash with the current aperture at ...
-//X228600Y26425D03*
-//// D03 - Create flash with the current aperture at ...
-//X228600Y43425D03*
+// D03 - Create flash with the current aperture at (297425, 165100) mm
+X297425Y165100D03*
+// D03 - Create flash with the current aperture at ...
+X280425Y165100D03*
+// D03 - Create flash with the current aperture at ...
+X228600Y26425D03*
+// D03 - Create flash with the current aperture at ...
+X228600Y43425D03*
 //
 //
 //

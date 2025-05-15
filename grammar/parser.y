@@ -266,20 +266,43 @@ D03
 D03
     : D03_X { /* std::cout << "[PARSER] D03_X rule" << std::endl; */ }
     | D03_Y { /* std::cout << "[PARSER] D03_Y rule" << std::endl; */ }
-    | D03_X_Y { /* std::cout << "[PARSER] D03_X_Y rule" << std::endl; */ }
-    ;
-
-D03_Y
-    : y_c APERTURE_IDENT_FLASH '*'
+    | D03_X_Y {
+        /* std::cout << "[PARSER] D03_X_Y rule" << std::endl; */
+    }
     ;
 
 D03_X
-    : x_c APERTURE_IDENT_FLASH '*'
+    : x_c APERTURE_IDENT_FLASH '*' { std::cout << "[PARSER] D03_X rule" << std::endl; }
+    ;
+
+D03_Y
+    : y_c APERTURE_IDENT_FLASH '*' { std::cout << "[PARSER] D03_Y rule" << std::endl; }
     ;
 
 D03_X_Y
     : x_c y_c APERTURE_IDENT_FLASH '*' {
         std::cout << "[PARSER] D03_X_Y rule - APERTURE_IDENT_FLASH (D03): X: " << $1 << " Y: " << $2 << std::endl;
+
+        // stack[idx] = new_ast_node(pool);
+        // stack[idx]->node_type = APERTURE_IDENT_FLASH_NODE_TYPE;
+        // memcpy(stack[idx]->name, "D03", strlen("D03"));
+        // idx++;
+
+        struct ASTNode* ad_flash_ast_node = new_ast_node(pool);
+        ad_flash_ast_node->node_type = APERTURE_IDENT_FLASH_NODE_TYPE;
+        add_child_ast_node(current_ast_node, ad_flash_ast_node);
+
+        struct ASTNode* ad_flash_x_ast_node = new_ast_node(pool);
+        ad_flash_x_ast_node->int_val = $1;
+        add_child_ast_node(ad_flash_ast_node, ad_flash_x_ast_node);
+
+        struct ASTNode* ad_flash_y_ast_node = new_ast_node(pool);
+        ad_flash_y_ast_node->int_val = $2;
+        add_child_ast_node(ad_flash_ast_node, ad_flash_y_ast_node);
+
+
+
+
     }
     ;
 

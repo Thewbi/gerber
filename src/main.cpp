@@ -35,6 +35,7 @@ int main(int argc, char **argv)
 
     // root node
     ASTNode* root_node = new_ast_node(pool);
+    root_node->node_type = ROOT_AST_NODE_TYPE;
     current_ast_node = root_node;
 
     //printf("root has %d child(ren) \n", child_count_ast_node(root_node));
