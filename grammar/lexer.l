@@ -18,6 +18,7 @@
 #include <cstring>
 
 #include "constants.h"
+#include "ast_node.h"
 #include "parser.h"
 
 %}

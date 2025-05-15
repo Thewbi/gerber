@@ -8,13 +8,24 @@
 
 #include <stdio.h>
 #include <cstdint>
+#include <string.h> // memcpy
 
 #include "constants.h"
+#include "ast_node.h"
 
 #define YYDEBUG 1
 #define YYERROR_VERBOSE 1
 
 extern int yylineno;
+
+//
+// ASTNodes
+//
+
+extern ASTNode * current_ast_node;
+extern ASTNode pool[100];
+extern int idx;
+extern ASTNode * stack[10];
 
 //-- Lexer prototype required by bison, aka getNextToken()
 int yylex();
@@ -344,21 +355,89 @@ LS
 
 AD
     : AD_TOK APERTURE_IDENT template_call ASTERISK_PERCENT {
-        /* std::cout << "[Parser] AD Rule. Identifier: " << std::string($2.string_val) << std::endl; */
+        /* std::cout << "[PARSER] [AD Rule]. Identifier: " << std::string($2.string_val) << std::endl; */
         //std::cout << $2 << std::endl;
-        std::cout << "Identifier: " << $2 << std::endl;
+        std::cout << "[PARSER] [AD Rule - 1] Identifier: " << $2 << std::endl;
         //printf("xy %s\n", $2);
+
+        printf("A\n");
+
+        // child 0 - R for rectangle, C for circle
+        idx--;
+        struct ASTNode* child_0_ast_node = stack[idx];
+
+        printf("B\n");
+
+        // child 1
+        idx--;
+        struct ASTNode* child_1_ast_node = stack[idx];
+        //std::cout << "[PARSER] child-id-1: " << child_1_ast_node->id << " int_val: " << child_1_ast_node->int_val << std::endl;
+
+        printf("C\n");
+
+        // // child 2
+        // idx--;
+        // struct ASTNode* child_2_ast_node = stack[idx];
+        // std::cout << "[PARSER] child-id-2: " << child_2_ast_node->id << " int_val: " << child_2_ast_node->int_val << std::endl;
+
+        printf("D\n");
+
+        struct ASTNode* ad_ast_node = new_ast_node(pool);
+
+        printf("E\n");
+        ad_ast_node->node_type = APERTURE_DEFINITION_AST_NODE_TYPE;
+        printf("F\n");
+        add_child_ast_node(ad_ast_node, child_0_ast_node);
+        printf("G\n");
+        // add_child_ast_node(ad_ast_node, child_2_ast_node);
+        add_child_ast_node(ad_ast_node, child_1_ast_node);
+        printf("H\n");
+        memcpy(ad_ast_node->name, $2, strlen($2));
+        printf("I\n");
+        add_child_ast_node(current_ast_node, ad_ast_node);
+        printf("J\n");
+
+        printf("childreN: %d\n", child_count_ast_node(ad_ast_node));
     }
     | AD_TOK APERTURE_IDENT aperture_shape ASTERISK_PERCENT {
-        /* std::cout << "[Parser] AD Rule. Identifier: " << std::string($2.string_val) << std::endl; */
-        std::cout << "Identifier: " << $2 << std::endl;
-        //printf("yx %s\n", $2);
+
+        // AD is an Aperture Definition meaning it defines a shape that can
+        // be instantiated later similar to a template of a shape
+
+        /* std::cout << "[PARSER] [AD Rule]. Identifier: " << std::string($2.string_val) << std::endl; */
+        std::cout << "[PARSER] [AD Rule - 2] Identifier: " << $2 << std::endl;
+
+        // child 0 - R for rectangle, C for circle
+        idx--;
+        struct ASTNode* child_0_ast_node = stack[idx];
+
+        // child 1
+        idx--;
+        struct ASTNode* child_1_ast_node = stack[idx];
+        std::cout << "[PARSER] child-id-1: " << child_1_ast_node->id << " int_val: " << child_1_ast_node->int_val << std::endl;
+
+        // child 2
+        idx--;
+        struct ASTNode* child_2_ast_node = stack[idx];
+        std::cout << "[PARSER] child-id-2: " << child_2_ast_node->id << " int_val: " << child_2_ast_node->int_val << std::endl;
+
+        struct ASTNode* ad_ast_node = new_ast_node(pool);
+        ad_ast_node->node_type = APERTURE_DEFINITION_AST_NODE_TYPE;
+        add_child_ast_node(ad_ast_node, child_0_ast_node);
+        add_child_ast_node(ad_ast_node, child_2_ast_node);
+        add_child_ast_node(ad_ast_node, child_1_ast_node);
+        memcpy(ad_ast_node->name, $2, strlen($2));
+        add_child_ast_node(current_ast_node, ad_ast_node);
     }
     ;
 
 aperture_shape
     : AD_NAME COMMA decimal_pair_list {
-        std::cout << "AD_NAME: " << $1 << std::endl;
+        std::cout << "[PARSER] AD_NAME: " << $1 << std::endl;
+
+        stack[idx] = new_ast_node(pool);
+        memcpy(stack[idx]->name, $1, strlen($1));
+        idx++;
     }
     ;
 
@@ -368,11 +447,27 @@ decimal_pair_list
     ;
 
 decimal_pair
-    :  DECIMAL_NUMBER { /**/ std::cout << "[Parser] AD.decimal_pair Rule = decimal " << $1 << std::endl;  }
+    : DECIMAL_NUMBER {
+        std::cout << "[PARSER] AD.decimal_pair Rule = decimal " << $1 << std::endl;
+
+        stack[idx] = new_ast_node(pool);
+        stack[idx]->int_val = (float) $1;
+
+        //std::cout << "[PARSER] id: " << stack[idx]->id << " int_val: " << stack[idx]->int_val << std::endl;
+
+        idx++;
+    }
     ;
 
 template_call
-    : C fst_par { /**/ std::cout << "[Parser] template_call Rule - C" << std::endl;  }
+    : C fst_par {
+        /* std::cout << "[PARSER] template_call Rule - C" << std::endl; */
+
+        stack[idx] = new_ast_node(pool);
+        //memcpy(stack[idx]->name, $1, strlen($1));
+        stack[idx]->name[0] = 'C';
+        idx++;
+    }
     //| 'C' fst_par nxt_par
     //| 'R' fst_par nxt_par [nxt_par]
     //| 'O' fst_par nxt_par [nxt_par]
@@ -381,7 +476,13 @@ template_call
     ;
 
 fst_par
-    : COMMA DECIMAL_NUMBER { /**/ std::cout << "[Parser] fst_par " << $2 << std::endl;  }
+    : COMMA DECIMAL_NUMBER {
+        std::cout << "[PARSER] fst_par " << $2 << std::endl;
+
+        stack[idx] = new_ast_node(pool);
+        stack[idx]->int_val = (float) $2;
+        idx++;
+    }
     ;
 
     /*
@@ -400,14 +501,14 @@ nxt_par
 
 // AM for Aperture Macro (Spec. Page 55)
 AM
-    : AM_TOK macro_name macro_body PERCENT { /* std::cout << "[Parser] AM Rule" << std::endl; */ }
+    : AM_TOK macro_name macro_body PERCENT { /* std::cout << "[PARSER] AM Rule" << std::endl; */ }
     ;
 
 // Name of the aperture macro. The name must be unique, it
 // cannot be reused for another macro. See 3.4.5 for the syntax
 // rules.
 macro_name
-    : NAME ASTERISK { /* std::cout << "[Parser] macro_name Rule" << std::endl; */ }
+    : NAME ASTERISK { /* std::cout << "[PARSER] macro_name Rule" << std::endl; */ }
     ;
 
 // The macro body contains the primitives generating the image
@@ -439,14 +540,14 @@ macro_variable
 // are positioned in a coordinates system whose origin is the
 // origin of the resulting apertures.
 primitive
-    : AM_ZERO STRING ASTERISK { std::cout << "[Parser] primitive-0 Rule" << std::endl; }
-    | AM_ONE par par par par ASTERISK { std::cout << "[Parser] primitive-1/1 Rule" << std::endl; }
-    | AM_ONE par par par par par ASTERISK { std::cout << "[Parser] primitive-1/2 Rule" << std::endl; }
-    | AM_TWENTY par { std::cout << "[Parser] PAR-1 value=" << $1 << std::endl; } par par par par par par ASTERISK { std::cout << "[Parser] primitive-20 Rule" << std::endl; }
-    | AM_TWENTY_ONE par par par par par par ASTERISK { std::cout << "[Parser] primitive-21 Rule" << std::endl; }
-    | AM_FOUR par par par par primitive_four_list par ASTERISK { std::cout << "[Parser] primitive-4 Rule" << std::endl; }
-    | AM_FIVE par par par par par par ASTERISK { std::cout << "[Parser] primitive-5 Rule" << std::endl; }
-    | AM_SEVEN par par par par par par ASTERISK { std::cout << "[Parser] primitive-7 Rule" << std::endl; }
+    : AM_ZERO STRING ASTERISK { std::cout << "[PARSER] primitive-0 Rule" << std::endl; }
+    | AM_ONE par par par par ASTERISK { std::cout << "[PARSER] primitive-1/1 Rule" << std::endl; }
+    | AM_ONE par par par par par ASTERISK { std::cout << "[PARSER] primitive-1/2 Rule" << std::endl; }
+    | AM_TWENTY par { std::cout << "[PARSER] PAR-1 value=" << $1 << std::endl; } par par par par par par ASTERISK { std::cout << "[PARSER] primitive-20 Rule" << std::endl; }
+    | AM_TWENTY_ONE par par par par par par ASTERISK { std::cout << "[PARSER] primitive-21 Rule" << std::endl; }
+    | AM_FOUR par par par par primitive_four_list par ASTERISK { std::cout << "[PARSER] primitive-4 Rule" << std::endl; }
+    | AM_FIVE par par par par par par ASTERISK { std::cout << "[PARSER] primitive-5 Rule" << std::endl; }
+    | AM_SEVEN par par par par par par ASTERISK { std::cout << "[PARSER] primitive-7 Rule" << std::endl; }
     ;
 
 primitive_four_list
@@ -478,7 +579,7 @@ parameter
 //# Compound statements
 
 region_statement
-    : G36 contour_list G37 { /*std::cout << "[Parser] region_statement Rule" << std::endl;*/ }
+    : G36 contour_list G37 { /*std::cout << "[PARSER] region_statement Rule" << std::endl;*/ }
     ;
 
 contour_list
@@ -514,7 +615,7 @@ AB_statement
     ;
 
 AB_open
-    : AB_TOK APERTURE_IDENT AB_ASTERISK_PERCENT { /*std::cout << "[Parser] AB_open Rule, aperture_ident = " << $2 << std::endl;*/ }
+    : AB_TOK APERTURE_IDENT AB_ASTERISK_PERCENT { /*std::cout << "[PARSER] AB_open Rule, aperture_ident = " << $2 << std::endl;*/ }
     ;
 
 AB_close
@@ -527,12 +628,12 @@ SR_statement
 
 SR_open
     : SR_TOK SR_X_INTEGER_NUMBER SR_Y_INTEGER_NUMBER SR_I_INTEGER_NUMBER SR_J_INTEGER_NUMBER SR_ASTERISK_PERCENT {
-        /*std::cout << "[Parser] SR_open Rule" << std::endl;*/
+        /*std::cout << "[PARSER] SR_open Rule" << std::endl;*/
     }
     ;
 
 SR_close
-    : END_SR_TOK { /* std::cout << "[Parser] SR_close Rule" << std::endl; */ }
+    : END_SR_TOK { /* std::cout << "[PARSER] SR_close Rule" << std::endl; */ }
     ;
 
 in_block_statement_list
@@ -660,9 +761,9 @@ factor
 
 /* https://stackoverflow.com/questions/52807994/implementing-multiple-return-types-in-bison-semantic-rules */
 factor
-    : macro_variable { std::cout << "[Parser] factor.macro_variable Rule" << std::endl; }
-    | UNSIGNED_DECIMAL_NUMBER { std::cout << "[Parser] factor value=" << std::setprecision(10) << $1 << std::endl; $$ = $1; }
-    | DECIMAL_NUMBER { std::cout << "[Parser] factor value=" << std::setprecision(10) << $1 << std::endl; $$ = $1; }
+    : macro_variable { std::cout << "[PARSER] factor.macro_variable Rule" << std::endl; }
+    | UNSIGNED_DECIMAL_NUMBER { std::cout << "[PARSER] factor value=" << std::setprecision(10) << $1 << std::endl; $$ = $1; }
+    | DECIMAL_NUMBER { std::cout << "[PARSER] factor value=" << std::setprecision(10) << $1 << std::endl; $$ = $1; }
     ;
 
 /*

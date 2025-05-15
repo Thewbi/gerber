@@ -2,12 +2,14 @@
 all: parser.h lex.yy.c gerber
 
 gerber: src/main.cpp \
+		src/ast_node.c \
 		parser.c \
 		lex.yy.c
 		g++ -g -o gerber \
 		src/main.cpp \
+		src/ast_node.c \
 		parser.c \
-		lex.yy.c -I ./
+		lex.yy.c -I ./ -I ./src
 
 lex.yy.c: grammar/lexer.l
 	flex -d grammar/lexer.l
