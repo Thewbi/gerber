@@ -47,6 +47,7 @@ void drawApertureToSVG(struct ASTNode * rootNode, struct ASTNode * ast_node_ptr)
     //printf("Selected aperture: id: %d name: %s\n", currently_selected_aperture->id, currently_selected_aperture->name);
     //printf("Flash width: %f, height: %f\n", currently_selected_aperture->children[1]->int_val, currently_selected_aperture->children[2]->int_val);
 
+    // for solder mask gerber files, only rectangular apertures are output
     if (strcmp(currently_selected_aperture->children[0]->name, "R") == 0) {
 
         // DEBUG
@@ -73,18 +74,8 @@ void drawApertureToSVG(struct ASTNode * rootNode, struct ASTNode * ast_node_ptr)
 
         // convert x, y, width, height to formatted value
 
-
         // print x, y, width, height
         //printf("Rectangle: x: %f, y: %f, width: %f, height: %f\n", x, y, width, height);
-
-    //     <rect
-    //    style="fill:#000000;stroke-width:0.264583"
-    //    id="rect1"
-    //    width="1.1"
-    //    height="1"
-    //    x="29.742001"
-    //    y="16.51" />
-
 
         float y_temp = y;
 
@@ -92,14 +83,53 @@ void drawApertureToSVG(struct ASTNode * rootNode, struct ASTNode * ast_node_ptr)
         // svg has the origin in the top left corner
         int flip_at_x_axis = 1;
         if (flip_at_x_axis) {
-
             y_temp = ((y*-1.0f - height) + 25.f);
-
         }
 
-        printf("<rect style=\"fill:#000000;stroke-width:0.264583\" x=\"%f\" y=\"%f\" width=\"%f\" height=\"%f\" />\n",
-            // (x/10000.0f), (y/1000.0f), width, height);
+        printf("  <rect style=\"fill:#000000;stroke-width:0.264583\" x=\"%f\" y=\"%f\" width=\"%f\" height=\"%f\" />\n",
             x, y_temp, width, height);
     }
+}
 
+void outputSolderMaskToSVG(struct ASTNode * root_node) {
+
+        printf("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n");
+
+        printf("<svg ");
+        printf("width=\"210mm\" ");
+        printf("height=\"297mm\" ");
+        printf("viewBox=\"0 0 210 297\" ");
+        printf("version=\"1.1\" ");
+        printf("id=\"svg1\" ");
+        printf("xmlns=\"http://www.w3.org/2000/svg\" ");
+        printf("xmlns:svg=\"http://www.w3.org/2000/svg\">\n");
+
+        walkASTTreeToSVG(root_node, root_node);
+
+        printf("</svg>\n");
+    }
+
+void walkASTTreeToSVG(struct ASTNode * root_node, struct ASTNode * astNode) {
+
+    for (int i = 0; i < AST_NODE_CHILDREN_LENGTH; i++)
+    {
+        struct ASTNode * ast_node_ptr = astNode->children[i];
+        if (ast_node_ptr == 0) {
+            continue;
+        }
+
+        switch (ast_node_ptr->node_type) {
+
+            // internal state changes, a new aperture is selected
+            case APERTURE_SELECT_FLASH_NODE_TYPE:
+                selectApertureToSVG(root_node, ast_node_ptr);
+                walkASTTreeToSVG(root_node, ast_node_ptr);
+                break;
+
+            // flashing means to draw an aperture
+            case APERTURE_IDENT_FLASH_NODE_TYPE:
+                drawApertureToSVG(root_node, ast_node_ptr);
+                break;
+        }
+    }
 }

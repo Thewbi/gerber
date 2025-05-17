@@ -18,31 +18,6 @@ struct ASTNode pool[AST_NODE_POOL_SIZE];
 int idx;
 struct ASTNode * stack[10];
 
-void walkASTTree(ASTNode * rootNode, ASTNode * astNode) {
-
-    for (int i = 0; i < AST_NODE_CHILDREN_LENGTH; i++)
-    {
-        ASTNode * ast_node_ptr = astNode->children[i];
-        if (ast_node_ptr == nullptr) {
-            continue;
-        }
-
-        switch (ast_node_ptr->node_type) {
-
-            // internal state changes, a new aperture is selected
-            case APERTURE_SELECT_FLASH_NODE_TYPE:
-                selectApertureToSVG(rootNode, ast_node_ptr);
-                walkASTTree(rootNode, ast_node_ptr);
-                break;
-
-            // flashing means to draw an aperture
-            case APERTURE_IDENT_FLASH_NODE_TYPE:
-                drawApertureToSVG(rootNode, ast_node_ptr);
-                break;
-        }
-    }
-}
-
 int main(int argc, char **argv)
 {
     // std::cout << "test" << std::endl;
@@ -95,7 +70,9 @@ int main(int argc, char **argv)
     // DEBUG
     output_ast_node(root_node, 0);
 
-    walkASTTree(root_node, root_node);
+    outputSolderMaskToSVG(root_node);
+
+    // TODO: NEXT Convert solder mask to paths for silhouette cameo 4
 
     return 0;
 }
