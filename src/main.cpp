@@ -12,7 +12,7 @@ extern int yy_flex_debug;
 extern int yydebug;
 
 struct ASTNode * current_ast_node;
-struct ASTNode pool[100];
+struct ASTNode pool[AST_NODE_POOL_SIZE];
 
 int idx;
 struct ASTNode * stack[10];
@@ -24,7 +24,7 @@ int main(int argc, char **argv)
     // TODO: preprocess file! Parser TF commands manually! They are to irregular and since flex does not support non-greedy matching easily this is a complete mess.
 
     int i = 0;
-    for (i = 0; i < 100; i++) {
+    for (i = 0; i < AST_NODE_POOL_SIZE; i++) {
         initialize_ast_node(&pool[i]);
         pool[i].id = i+1;
     }
@@ -36,6 +36,10 @@ int main(int argc, char **argv)
     // root node
     ASTNode* root_node = new_ast_node(pool);
     root_node->node_type = ROOT_AST_NODE_TYPE;
+
+    memcpy(root_node->name, "root", strlen("root"));
+
+    // root is initially the current node
     current_ast_node = root_node;
 
     //printf("root has %d child(ren) \n", child_count_ast_node(root_node));

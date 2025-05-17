@@ -194,7 +194,33 @@ D01_X_Y_I_J
     ;
 
 D01_X_Y
-    : x_c y_c APERTURE_IDENT_SEGMENT '*'
+    : x_c y_c APERTURE_IDENT_SEGMENT '*' {
+
+        if (current_ast_node->node_type != ROOT_AST_NODE_TYPE) {
+            // ascend
+            current_ast_node = current_ast_node->parent;
+        }
+
+        struct ASTNode* set_point_ast_node = new_ast_node(pool);
+        set_point_ast_node->node_type = D1_SET_POINT_NODE_TYPE;
+        if (add_child_ast_node(current_ast_node, set_point_ast_node)) {
+            exit(-1);
+        }
+
+        struct ASTNode* set_point_x_ast_node = new_ast_node(pool);
+        //set_point_x_ast_node->node_type = D2_SET_POINT_X_NODE_TYPE;
+        set_point_x_ast_node->int_val = $1;
+        if (add_child_ast_node(set_point_ast_node, set_point_x_ast_node)) {
+            exit(-1);
+        }
+
+        struct ASTNode* set_point_y_ast_node = new_ast_node(pool);
+        //set_point_y_ast_node->node_type = D2_SET_POINT_Y_NODE_TYPE;
+        set_point_y_ast_node->int_val = $2;
+        if (add_child_ast_node(set_point_ast_node, set_point_y_ast_node)) {
+            exit(-1);
+        }
+    }
     ;
 
 D01_X
@@ -254,7 +280,34 @@ D02_X
     ;
 
 D02_X_Y
-    : x_c y_c APERTURE_IDENT_MOVE '*'
+    : x_c y_c APERTURE_IDENT_MOVE '*' {
+        std::cout << "[PARSER] D02_X_Y rule - APERTURE_IDENT_MOVE" << std::endl;
+
+        if (current_ast_node->node_type != ROOT_AST_NODE_TYPE) {
+            // ascend
+            current_ast_node = current_ast_node->parent;
+        }
+
+        struct ASTNode* set_point_ast_node = new_ast_node(pool);
+        set_point_ast_node->node_type = D2_SET_POINT_NODE_TYPE;
+        if (add_child_ast_node(current_ast_node, set_point_ast_node)) {
+            exit(-1);
+        }
+
+        struct ASTNode* set_point_x_ast_node = new_ast_node(pool);
+        //set_point_x_ast_node->node_type = D2_SET_POINT_X_NODE_TYPE;
+        set_point_x_ast_node->int_val = $1;
+        if (add_child_ast_node(set_point_ast_node, set_point_x_ast_node)) {
+            exit(-1);
+        }
+
+        struct ASTNode* set_point_y_ast_node = new_ast_node(pool);
+        //set_point_y_ast_node->node_type = D2_SET_POINT_Y_NODE_TYPE;
+        set_point_y_ast_node->int_val = $2;
+        if (add_child_ast_node(set_point_ast_node, set_point_y_ast_node)) {
+            exit(-1);
+        }
+    }
     ;
 
 /*
@@ -290,19 +343,21 @@ D03_X_Y
 
         struct ASTNode* ad_flash_ast_node = new_ast_node(pool);
         ad_flash_ast_node->node_type = APERTURE_IDENT_FLASH_NODE_TYPE;
-        add_child_ast_node(current_ast_node, ad_flash_ast_node);
+        if (add_child_ast_node(current_ast_node, ad_flash_ast_node)) {
+            exit(-1);
+        }
 
         struct ASTNode* ad_flash_x_ast_node = new_ast_node(pool);
         ad_flash_x_ast_node->int_val = $1;
-        add_child_ast_node(ad_flash_ast_node, ad_flash_x_ast_node);
+        if (add_child_ast_node(ad_flash_ast_node, ad_flash_x_ast_node)) {
+            exit(-1);
+        }
 
         struct ASTNode* ad_flash_y_ast_node = new_ast_node(pool);
         ad_flash_y_ast_node->int_val = $2;
-        add_child_ast_node(ad_flash_ast_node, ad_flash_y_ast_node);
-
-
-
-
+        if (add_child_ast_node(ad_flash_ast_node, ad_flash_y_ast_node)) {
+            exit(-1);
+        }
     }
     ;
 
@@ -332,7 +387,9 @@ X_Y_PREFIX
 G01
     : INTERPOLATION_LINEAR '*' { /* std::cout << "[PARSER] INTERPOLATION_LINEAR Rule" << std::endl; */ }
     | INTERPOLATION_LINEAR D01_X_Y { /* std::cout << "[PARSER] DEPRECATED INTERPOLATION_LINEAR D01_X_Y Rule" << std::endl; */ }
-    | INTERPOLATION_LINEAR D02_X_Y { /* std::cout << "[PARSER] DEPRECATED INTERPOLATION_LINEAR D02_X_Y Rule" << std::endl; */ }
+    | INTERPOLATION_LINEAR D02_X_Y {
+        std::cout << "[PARSER] DEPRECATED INTERPOLATION_LINEAR D02_X_Y Rule" << std::endl;
+    }
     | INTERPOLATION_LINEAR D03_X_Y { /* std::cout << "[PARSER] DEPRECATED INTERPOLATION_LINEAR D03_X_Y Rule" << std::endl; */ }
     ;
 
@@ -349,7 +406,36 @@ G75
     ;
 
 Dnn
-    : APERTURE_IDENT '*' { /**/ std::cout << "[PARSER] Dnn Rule: APERTURE_IDENT: " << $1 << std::endl;  }
+    : APERTURE_IDENT '*' {
+        std::cout << "[PARSER] Dnn Rule: APERTURE_IDENT: " << $1 << std::endl;
+
+
+        // Problem: Cannot (automatically) ascend from node because node exit
+        // is not detected by parser. Only node enter is detected by parser!
+        //
+        // Workaround: if a new Dnn node is encountered while the current
+        // node is of type Dnn, ascend from the last Dnn node and descend
+        // into the new Dnn
+        //if (current_ast_node->node_type == APERTURE_SELECT_FLASH_NODE_TYPE) {
+        if (current_ast_node->node_type != ROOT_AST_NODE_TYPE) {
+            // ascend
+            current_ast_node = current_ast_node->parent;
+        }
+
+
+        struct ASTNode* ad_select_ast_node = new_ast_node(pool);
+        ad_select_ast_node->node_type = APERTURE_SELECT_FLASH_NODE_TYPE;
+        if (add_child_ast_node(current_ast_node, ad_select_ast_node)) {
+            exit(-1);
+        }
+
+        memset(ad_select_ast_node->name, 0, AST_NODE_NAME_LENGTH);
+        memcpy(ad_select_ast_node->name, $1, strlen($1));
+
+        // descend
+        current_ast_node = ad_select_ast_node;
+
+    }
     ;
 
 G04
@@ -410,17 +496,26 @@ AD
         printf("E\n");
         ad_ast_node->node_type = APERTURE_DEFINITION_AST_NODE_TYPE;
         printf("F\n");
-        add_child_ast_node(ad_ast_node, child_0_ast_node);
-        printf("G\n");
-        // add_child_ast_node(ad_ast_node, child_2_ast_node);
-        add_child_ast_node(ad_ast_node, child_1_ast_node);
-        printf("H\n");
-        memcpy(ad_ast_node->name, $2, strlen($2));
-        printf("I\n");
-        add_child_ast_node(current_ast_node, ad_ast_node);
-        printf("J\n");
+        if (add_child_ast_node(ad_ast_node, child_0_ast_node)) {
+            exit(-1);
+        }
 
-        printf("childreN: %d\n", child_count_ast_node(ad_ast_node));
+        //printf("G\n");
+
+        if (add_child_ast_node(ad_ast_node, child_1_ast_node)) {
+            exit(-1);
+        }
+
+        //printf("H\n");
+        memcpy(ad_ast_node->name, $2, strlen($2));
+        //printf("I\n");
+
+        if (add_child_ast_node(current_ast_node, ad_ast_node)) {
+            exit(-1);
+        }
+        //printf("J\n");
+
+        //printf("children: %d\n", child_count_ast_node(ad_ast_node));
     }
     | AD_TOK APERTURE_IDENT aperture_shape ASTERISK_PERCENT {
 
@@ -446,11 +541,19 @@ AD
 
         struct ASTNode* ad_ast_node = new_ast_node(pool);
         ad_ast_node->node_type = APERTURE_DEFINITION_AST_NODE_TYPE;
-        add_child_ast_node(ad_ast_node, child_0_ast_node);
-        add_child_ast_node(ad_ast_node, child_2_ast_node);
-        add_child_ast_node(ad_ast_node, child_1_ast_node);
+        if (add_child_ast_node(ad_ast_node, child_0_ast_node)) {
+            exit(-1);
+        }
+        if (add_child_ast_node(ad_ast_node, child_2_ast_node)) {
+            exit(-1);
+        }
+        if (add_child_ast_node(ad_ast_node, child_1_ast_node)) {
+            exit(-1);
+        }
         memcpy(ad_ast_node->name, $2, strlen($2));
-        add_child_ast_node(current_ast_node, ad_ast_node);
+        if (add_child_ast_node(current_ast_node, ad_ast_node)) {
+            exit(-1);
+        }
     }
     ;
 
@@ -459,6 +562,7 @@ aperture_shape
         std::cout << "[PARSER] AD_NAME: " << $1 << std::endl;
 
         stack[idx] = new_ast_node(pool);
+        memset(stack[idx]->name, 0, AST_NODE_NAME_LENGTH);
         memcpy(stack[idx]->name, $1, strlen($1));
         idx++;
     }
