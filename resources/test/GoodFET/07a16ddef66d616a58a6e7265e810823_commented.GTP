@@ -65,6 +65,12 @@ G75*
 //// aperture named D17 which is a rectangle (R) with size 2.308 x 0.5 (unit is set by %MOMM*% to mm)
 //%ADD17R,2.308000X0.500000*%
 //
+
+
+
+
+// Aperture D18 is not used
+//
 //// aperture named D18 which is a circle (C) with a diameter of 0.254 (unit is set by %MOMM*% to mm)
 //%ADD18C,0.254000*%
 
@@ -74,6 +80,25 @@ G75*
 // Select aperture D10 as current aperture
 D10*
 // D03 - Create flash with the current aperture at (297425, 165100) mm
+// HINT: in gerbv, change the unit from mil (default value) to mm
+// The unit selector is located at the bottom right of the x, y coordinates
+// display so that the coordinate at the mouse pointer is displayed in mm!
+// This makes the comparison to this file easier.
+//
+// If the aperture is a recangle (R), then when the rectangle is flashed to
+// a coordinate (x, y) then the values (x, y) are used as the center point of
+// the rectangle! (x, y) are not one of the corners, but the very center of the
+// rectangle!
+//
+// A format of 3.4 means that the orignal coordnate value is turned into
+// a decimal value by applying the fractional part from the right. The
+// decimal point is moved from the right to the left until fractional digits
+// are reached. e.g.:
+// 297425 --> format (3.4) --> 29.7425
+//
+// 297425 --> format (3.4) --> 29.7425 --> (unit mm) --> 29.7425 mm
+// 165100 --> format (3.4) --> 16.5100 --> (unit mm) --> 16.5100 mm
+//
 X297425Y165100D03*
 // D03 - Create flash with the current aperture at ...
 X280425Y165100D03*
@@ -278,7 +303,7 @@ X27625Y54425D03*
 X57344Y115425D02*
 // Draw a line from current point to (56786, 115488), page 84
 X56786Y115488D01*
-// // Draw a line from current point to ...
+// Draw a line from current point to ...
 X56239Y115613D01*
 X55709Y115798D01*
 X55203Y116042D01*
