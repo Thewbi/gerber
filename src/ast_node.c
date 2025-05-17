@@ -25,7 +25,7 @@ struct ASTNode* new_ast_node(struct ASTNode* pool) {
             continue;
         }
 
-        printf("found: %d\n", i);
+        //printf("found: %d\n", i);
 
         initialize_ast_node(node);
         node->used = 1;
@@ -68,7 +68,7 @@ int add_child_ast_node(struct ASTNode* parent, struct ASTNode* child) {
         return 1;
     }
 
-    printf("add_child_ast_node %d at index %d\n", child, i);
+    //printf("add_child_ast_node %d at index %d\n", child, i);
 
     parent->children[i] = child;
     child->parent = parent;

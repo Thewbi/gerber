@@ -3,11 +3,13 @@ all: parser.h lex.yy.c gerber
 
 gerber: src/main.cpp \
 		src/ast_node.c \
+		src/svg.c \
 		parser.c \
 		lex.yy.c
 		g++ -g -o gerber \
 		src/main.cpp \
 		src/ast_node.c \
+		src/svg.c \
 		parser.c \
 		lex.yy.c -I ./ -I ./src
 

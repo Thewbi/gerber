@@ -281,7 +281,7 @@ D02_X
 
 D02_X_Y
     : x_c y_c APERTURE_IDENT_MOVE '*' {
-        std::cout << "[PARSER] D02_X_Y rule - APERTURE_IDENT_MOVE" << std::endl;
+        //std::cout << "[PARSER] D02_X_Y rule - APERTURE_IDENT_MOVE" << std::endl;
 
         if (current_ast_node->node_type != ROOT_AST_NODE_TYPE) {
             // ascend
@@ -334,7 +334,7 @@ D03_Y
 
 D03_X_Y
     : x_c y_c APERTURE_IDENT_FLASH '*' {
-        std::cout << "[PARSER] D03_X_Y rule - APERTURE_IDENT_FLASH (D03): X: " << $1 << " Y: " << $2 << std::endl;
+        //std::cout << "[PARSER] D03_X_Y rule - APERTURE_IDENT_FLASH (D03): X: " << $1 << " Y: " << $2 << std::endl;
 
         // stack[idx] = new_ast_node(pool);
         // stack[idx]->node_type = APERTURE_IDENT_FLASH_NODE_TYPE;
@@ -407,7 +407,7 @@ G75
 
 Dnn
     : APERTURE_IDENT '*' {
-        std::cout << "[PARSER] Dnn Rule: APERTURE_IDENT: " << $1 << std::endl;
+        //std::cout << "[PARSER] Dnn Rule: APERTURE_IDENT: " << $1 << std::endl;
 
 
         // Problem: Cannot (automatically) ascend from node because node exit
@@ -523,7 +523,7 @@ AD
         // be instantiated later similar to a template of a shape
 
         /* std::cout << "[PARSER] [AD Rule]. Identifier: " << std::string($2.string_val) << std::endl; */
-        std::cout << "[PARSER] [AD Rule - 2] Identifier: " << $2 << std::endl;
+        //std::cout << "[PARSER] [AD Rule - 2] Identifier: " << $2 << std::endl;
 
         // child 0 - R for rectangle, C for circle
         idx--;
@@ -532,12 +532,12 @@ AD
         // child 1
         idx--;
         struct ASTNode* child_1_ast_node = stack[idx];
-        std::cout << "[PARSER] child-id-1: " << child_1_ast_node->id << " int_val: " << child_1_ast_node->int_val << std::endl;
+        //std::cout << "[PARSER] child-id-1: " << child_1_ast_node->id << " int_val: " << child_1_ast_node->int_val << std::endl;
 
         // child 2
         idx--;
         struct ASTNode* child_2_ast_node = stack[idx];
-        std::cout << "[PARSER] child-id-2: " << child_2_ast_node->id << " int_val: " << child_2_ast_node->int_val << std::endl;
+        //std::cout << "[PARSER] child-id-2: " << child_2_ast_node->id << " int_val: " << child_2_ast_node->int_val << std::endl;
 
         struct ASTNode* ad_ast_node = new_ast_node(pool);
         ad_ast_node->node_type = APERTURE_DEFINITION_AST_NODE_TYPE;
@@ -559,7 +559,7 @@ AD
 
 aperture_shape
     : AD_NAME COMMA decimal_pair_list {
-        std::cout << "[PARSER] AD_NAME: " << $1 << std::endl;
+        //std::cout << "[PARSER] AD_NAME: " << $1 << std::endl;
 
         stack[idx] = new_ast_node(pool);
         memset(stack[idx]->name, 0, AST_NODE_NAME_LENGTH);
@@ -575,7 +575,7 @@ decimal_pair_list
 
 decimal_pair
     : DECIMAL_NUMBER {
-        std::cout << "[PARSER] AD.decimal_pair Rule = decimal " << $1 << std::endl;
+        //std::cout << "[PARSER] AD.decimal_pair Rule = decimal " << $1 << std::endl;
 
         stack[idx] = new_ast_node(pool);
         stack[idx]->int_val = (float) $1;
